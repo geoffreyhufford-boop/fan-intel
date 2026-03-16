@@ -145,7 +145,7 @@ app.get('/api/shows', requireAuth, async (req, res) => {
 app.get('/api/shows/tonight', requireAuth, async (req, res) => {
   const { rows } = await pool.query(`
     SELECT * FROM shows
-    ORDER BY ABS(EXTRACT(EPOCH FROM (date - CURRENT_DATE)))
+    ORDER BY ABS(date - CURRENT_DATE)
     LIMIT 1
   `);
   res.json(rows[0] || null);
