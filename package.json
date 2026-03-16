@@ -1,0 +1,15 @@
+{
+  "name": "fan-intel",
+  "version": "1.0.0",
+  "description": "Fan Intelligence Tour Entry Tool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "pg": "^8.13.0",
+    "dotenv": "^16.4.0"
+  }
+}

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Fan Intel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text2: #888;
+      --accent: #ff6b35;
+      --accent2: #ff8c5a;
+      --green: #4ade80;
+      --red: #f87171;
+      --blue: #60a5fa;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* PIN SCREEN */
+    #pin-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100dvh;
+      gap: 24px;
+    }
+    #pin-screen h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    #pin-screen .subtitle { color: var(--text2); font-size: 14px; }
+    #pin-input {
+      font-size: 32px;
+      text-align: center;
+      width: 200px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      letter-spacing: 12px;
+      -webkit-text-security: disc;
+    }
+    #pin-error { color: var(--red); font-size: 14px; display: none; }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      z-index: 100;
+    }
+    .nav button {
+      flex: 1;
+      padding: 12px 8px;
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav button.active { color: var(--accent); }
+    .nav button .icon { font-size: 22px; }
+
+    /* SCREENS */
+    .screen { display: none; padding: 16px 16px 100px; }
+    .screen.active { display: block; }
+    .screen-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      padding-top: env(safe-area-inset-top, 12px);
+    }
+    .screen-sub { color: var(--text2); font-size: 13px; margin-bottom: 20px; }
+
+    /* TONIGHT BANNER */
+    .tonight {
+      background: linear-gradient(135deg, var(--accent), #e55a2b);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+    .tonight .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+    .tonight .venue { font-size: 20px; font-weight: 700; margin: 4px 0; }
+    .tonight .city { font-size: 15px; opacity: 0.9; }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    /* FORM */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+      font-family: inherit;
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* TOGGLE CHIPS */
+    .toggles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .toggle.on {
+      background: rgba(255, 107, 53, 0.15);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+    .toggle .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+    .toggle.on .check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* PLATFORM PICKER */
+    .platform-picker {
+      display: flex;
+      gap: 8px;
+    }
+    .platform-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .platform-btn.active {
+      background: rgba(255, 107, 53, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* BTN */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:active { background: #e55a2b; }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* FAN LIST */
+    .fan-row {
+      display: flex;
+      align-items: center;
+      padding: 14px;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .fan-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .fan-rank {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text2);
+      flex-shrink: 0;
+    }
+    .fan-rank.top3 { background: var(--accent); color: #fff; }
+    .fan-info { flex: 1; min-width: 0; }
+    .fan-handle {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fan-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .fan-score {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* STAT GRID */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+    /* SHOW LIST */
+    .show-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .show-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .show-date {
+      width: 44px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .show-date .month { font-size: 10px; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+    .show-date .day { font-size: 18px; font-weight: 700; }
+    .show-info { flex: 1; }
+    .show-venue { font-size: 14px; font-weight: 600; }
+    .show-city { font-size: 12px; color: var(--text2); }
+    .show-past { opacity: 0.4; }
+    .show-today { background: rgba(255, 107, 53, 0.08); border-radius: 10px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      top: env(safe-area-inset-top, 20px);
+      left: 16px;
+      right: 16px;
+      background: var(--green);
+      color: #000;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      text-align: center;
+      z-index: 200;
+      transform: translateY(-120%);
+      transition: transform 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 150;
+      align-items: flex-end;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 20px 16px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+      max-height: 85dvh;
+      overflow-y: auto;
+    }
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+
+    /* SEARCH */
+    .search-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+    }
+
+    /* AUTOCOMPLETE */
+    .autocomplete-results {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: -10px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .autocomplete-results.show { display: block; }
+    .ac-item {
+      padding: 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:active { background: rgba(255,107,53,0.1); }
+    .ac-item .ac-handle { font-weight: 600; }
+    .ac-item .ac-platform { color: var(--text2); font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <h1>Fan Intel</h1>
+  <p class="subtitle">Tour Data Collection</p>
+  <input type="tel" id="pin-input" maxlength="4" placeholder="····" inputmode="numeric" autocomplete="off">
+  <p id="pin-error">Wrong PIN</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCREEN: ADD -->
+  <div class="screen active" id="screen-add">
+    <div class="screen-title">Add Fan</div>
+    <div class="screen-sub" id="tonight-sub">Loading show...</div>
+
+    <div id="tonight-banner" class="tonight" style="display:none">
+      <div class="label">Tonight</div>
+      <div class="venue" id="tonight-venue"></div>
+      <div class="city" id="tonight-city"></div>
+    </div>
+
+    <!-- Existing fan search -->
+    <div class="card" style="margin-bottom: 16px;">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Returning fan? Search first</label>
+        <input type="text" id="fan-search" placeholder="Search handle or name..." autocomplete="off">
+      </div>
+      <div class="autocomplete-results" id="ac-results"></div>
+    </div>
+
+    <div id="new-fan-form">
+      <div class="card">
+        <div class="form-group">
+          <label>Handle</label>
+          <input type="text" id="f-handle" placeholder="@username" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Platform</label>
+          <div class="platform-picker">
+            <div class="platform-btn active" data-val="instagram">IG</div>
+            <div class="platform-btn" data-val="tiktok">TikTok</div>
+            <div class="platform-btn" data-val="irl">IRL</div>
+            <div class="platform-btn" data-val="other">Other</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Real Name</label>
+          <input type="text" id="f-name" placeholder="Optional" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Home City</label>
+          <input type="text" id="f-city" placeholder="Optional" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group" style="margin-bottom:12px">
+          <label>What did they do?</label>
+        </div>
+        <div class="toggles">
+          <div class="toggle on" data-field="attended_show"><span class="check">✓</span>At the show</div>
+          <div class="toggle" data-field="bought_merch"><span class="check">✓</span>Bought merch</div>
+          <div class="toggle" data-field="commented_repeatedly"><span class="check">✓</span>Comments a lot</div>
+          <div class="toggle" data-field="shared_reposted"><span class="check">✓</span>Shares/reposts</div>
+          <div class="toggle" data-field="creates_content"><span class="check">✓</span>Creates content</div>
+          <div class="toggle" data-field="frequent_dms"><span class="check">✓</span>DMs/replies</div>
+          <div class="toggle" data-field="runs_fan_page"><span class="check">✓</span>Runs fan page</div>
+          <div class="toggle" data-field="attended_multiple"><span class="check">✓</span>Multiple shows</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label>Merch items (if any)</label>
+          <input type="text" id="f-merch" placeholder="e.g. black hoodie, vinyl" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Front row, brought 3 friends, etc."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Your name</label>
+          <input type="text" id="f-enteredby" placeholder="Who's entering this?" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Show</label>
+        <select id="f-show"></select>
+      </div>
+
+      <button class="btn btn-primary" id="btn-submit">Save Fan</button>
+    </div>
+
+    <!-- Returning fan sighting form (hidden by default) -->
+    <div id="returning-fan-form" style="display:none">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <div style="font-size:18px;font-weight:700" id="rf-handle"></div>
+            <div style="font-size:13px;color:var(--text2)" id="rf-meta"></div>
+          </div>
+          <button class="btn-secondary" style="padding:8px 14px;font-size:13px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer" id="btn-cancel-returning">New fan instead</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group" style="margin-bottom:12px">
+          <label>What did they do tonight?</label>
+        </div>
+        <div class="toggles" id="rf-toggles">
+          <div class="toggle on" data-field="attended_show"><span class="check">✓</span>At the show</div>
+          <div class="toggle" data-field="bought_merch"><span class="check">✓</span>Bought merch</div>
+          <div class="toggle" data-field="commented_repeatedly"><span class="check">✓</span>Comments a lot</div>
+          <div class="toggle" data-field="shared_reposted"><span class="check">✓</span>Shares/reposts</div>
+          <div class="toggle" data-field="creates_content"><span class="check">✓</span>Creates content</div>
+          <div class="toggle" data-field="frequent_dms"><span class="check">✓</span>DMs/replies</div>
+          <div class="toggle" data-field="runs_fan_page"><span class="check">✓</span>Runs fan page</div>
+          <div class="toggle" data-field="attended_multiple"><span class="check">✓</span>Multiple shows</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="form-group">
+          <label>Merch items</label>
+          <input type="text" id="rf-merch" placeholder="e.g. black hoodie, vinyl" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="rf-notes" placeholder="What happened?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Your name</label>
+          <input type="text" id="rf-enteredby" placeholder="Who's entering this?" autocomplete="off">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-submit-returning">Log Sighting</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="screen-title">Dashboard</div>
+    <div class="screen-sub">Top fans by score</div>
+
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-box"><div class="stat-num" id="s-fans">0</div><div class="stat-label">Fans</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-sightings">0</div><div class="stat-label">Sightings</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-shows">0</div><div class="stat-label">Shows Logged</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-cities">0</div><div class="stat-label">Cities</div></div>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="dash-search" placeholder="Filter fans..." autocomplete="off">
+    </div>
+
+    <div class="card" id="fan-list" style="padding:0;overflow:hidden"></div>
+  </div>
+
+  <!-- SCREEN: SHOWS -->
+  <div class="screen" id="screen-shows">
+    <div class="screen-title">Tour</div>
+    <div class="screen-sub">48 shows — Mar 4 to May 15</div>
+    <div class="card" id="show-list" style="padding:0;overflow:hidden"></div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="active" data-screen="screen-add"><span class="icon">+</span>Add</button>
+    <button data-screen="screen-dashboard"><span class="icon">◆</span>Fans</button>
+    <button data-screen="screen-shows"><span class="icon">●</span>Tour</button>
+  </div>
+</div>
+
+<!-- FAN DETAIL MODAL -->
+<div class="modal-overlay" id="fan-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modal-handle"></h2>
+    <div style="color:var(--text2);font-size:13px;margin-bottom:16px" id="modal-meta"></div>
+    <div id="modal-sightings"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let PIN = '';
+let currentShow = null;
+let shows = [];
+let selectedReturningFan = null;
+
+// ----- AUTH -----
+const pinInput = document.getElementById('pin-input');
+pinInput.addEventListener('input', async () => {
+  if (pinInput.value.length === 4) {
+    PIN = pinInput.value;
+    try {
+      const res = await api('/api/shows/tonight');
+      if (res) {
+        localStorage.setItem('fi-pin', PIN);
+        document.getElementById('pin-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        init();
+      }
+    } catch {
+      document.getElementById('pin-error').style.display = 'block';
+      pinInput.value = '';
+      setTimeout(() => { document.getElementById('pin-error').style.display = 'none'; }, 2000);
+    }
+  }
+});
+
+// Auto-login
+const saved = localStorage.getItem('fi-pin');
+if (saved) {
+  PIN = saved;
+  fetch('/api/shows/tonight?pin=' + PIN).then(r => {
+    if (r.ok) {
+      document.getElementById('pin-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      init();
+    }
+  });
+}
+
+// Restore entered_by
+const savedName = localStorage.getItem('fi-name');
+
+// ----- API HELPER -----
+async function api(url, opts = {}) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'x-pin': PIN, ...(opts.headers || {}) },
+  });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
+
+// ----- INIT -----
+async function init() {
+  await loadShows();
+  loadTonight();
+  loadDashboard();
+  setupNav();
+  setupForm();
+  setupSearch();
+  if (savedName) {
+    document.getElementById('f-enteredby').value = savedName;
+    document.getElementById('rf-enteredby').value = savedName;
+  }
+}
+
+// ----- SHOWS -----
+async function loadShows() {
+  shows = await api('/api/shows');
+  const select = document.getElementById('f-show');
+  const today = new Date().toISOString().split('T')[0];
+  let closestIdx = 0;
+  let closestDiff = Infinity;
+
+  shows.forEach((s, i) => {
+    const opt = document.createElement('option');
+    const d = new Date(s.date);
+    opt.value = s.id;
+    opt.textContent = `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${s.city} — ${s.venue}`;
+    select.appendChild(opt);
+
+    const diff = Math.abs(new Date(s.date) - new Date(today));
+    if (diff < closestDiff) { closestDiff = diff; closestIdx = i; }
+  });
+
+  select.selectedIndex = closestIdx;
+  currentShow = shows[closestIdx];
+
+  // Show list
+  renderShowList();
+}
+
+function renderShowList() {
+  const list = document.getElementById('show-list');
+  const today = new Date().toISOString().split('T')[0];
+  list.innerHTML = shows.map(s => {
+    const d = new Date(s.date);
+    const dateStr = s.date.split('T')[0] || s.date;
+    const isPast = dateStr < today;
+    const isToday = dateStr === today;
+    return `<div class="show-row ${isPast ? 'show-past' : ''} ${isToday ? 'show-today' : ''}">
+      <div class="show-date">
+        <div class="month">${d.toLocaleDateString('en-US', { month: 'short' })}</div>
+        <div class="day">${d.getUTCDate()}</div>
+      </div>
+      <div class="show-info">
+        <div class="show-venue">${s.venue}</div>
+        <div class="show-city">${s.city}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadTonight() {
+  if (currentShow) {
+    document.getElementById('tonight-banner').style.display = 'block';
+    document.getElementById('tonight-venue').textContent = currentShow.venue;
+    document.getElementById('tonight-city').textContent = currentShow.city;
+    const d = new Date(currentShow.date);
+    document.getElementById('tonight-sub').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+}
+
+// ----- NAVIGATION -----
+function setupNav() {
+  document.querySelectorAll('.nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.screen).classList.add('active');
+      if (btn.dataset.screen === 'screen-dashboard') loadDashboard();
+    });
+  });
+}
+
+// ----- FORM -----
+function setupForm() {
+  // Platform picker
+  document.querySelectorAll('.platform-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Toggle chips
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('on'));
+  });
+
+  // Submit new fan
+  document.getElementById('btn-submit').addEventListener('click', submitNewFan);
+
+  // Submit returning fan sighting
+  document.getElementById('btn-submit-returning').addEventListener('click', submitReturningSighting);
+
+  // Cancel returning
+  document.getElementById('btn-cancel-returning').addEventListener('click', () => {
+    selectedReturningFan = null;
+    document.getElementById('returning-fan-form').style.display = 'none';
+    document.getElementById('new-fan-form').style.display = 'block';
+  });
+}
+
+async function submitNewFan() {
+  const handle = document.getElementById('f-handle').value.trim();
+  if (!handle) { toast('Enter a handle', true); return; }
+
+  const platform = document.querySelector('.platform-btn.active').dataset.val;
+  const enteredBy = document.getElementById('f-enteredby').value.trim();
+  localStorage.setItem('fi-name', enteredBy);
+
+  // Create fan
+  const fan = await api('/api/fans', {
+    method: 'POST',
+    body: JSON.stringify({
+      handle,
+      platform,
+      real_name: document.getElementById('f-name').value.trim() || null,
+      city: document.getElementById('f-city').value.trim() || null,
+    })
+  });
+
+  // Log sighting
+  const toggles = {};
+  document.querySelectorAll('#new-fan-form .toggle').forEach(t => {
+    toggles[t.dataset.field] = t.classList.contains('on');
+  });
+
+  await api('/api/sightings', {
+    method: 'POST',
+    body: JSON.stringify({
+      fan_id: fan.id,
+      show_id: parseInt(document.getElementById('f-show').value),
+      entered_by: enteredBy || null,
+      ...toggles,
+      merch_items: document.getElementById('f-merch').value.trim() || null,
+      notes: document.getElementById('f-notes').value.trim() || null,
+    })
+  });
+
+  toast(`${handle} saved!`);
+  resetForm();
+}
+
+async function submitReturningSighting() {
+  if (!selectedReturningFan) return;
+
+  const enteredBy = document.getElementById('rf-enteredby').value.trim();
+  localStorage.setItem('fi-name', enteredBy);
+
+  const toggles = {};
+  document.querySelectorAll('#rf-toggles .toggle').forEach(t => {
+    toggles[t.dataset.field] = t.classList.contains('on');
+  });
+
+  await api('/api/sightings', {
+    method: 'POST',
+    body: JSON.stringify({
+      fan_id: selectedReturningFan.id,
+      show_id: parseInt(document.getElementById('f-show').value),
+      entered_by: enteredBy || null,
+      ...toggles,
+      merch_items: document.getElementById('rf-merch').value.trim() || null,
+      notes: document.getElementById('rf-notes').value.trim() || null,
+    })
+  });
+
+  toast(`Sighting logged for ${selectedReturningFan.handle}!`);
+  selectedReturningFan = null;
+  document.getElementById('returning-fan-form').style.display = 'none';
+  document.getElementById('new-fan-form').style.display = 'block';
+  document.getElementById('fan-search').value = '';
+  document.getElementById('rf-merch').value = '';
+  document.getElementById('rf-notes').value = '';
+  document.querySelectorAll('#rf-toggles .toggle').forEach(t => {
+    if (t.dataset.field === 'attended_show') t.classList.add('on');
+    else t.classList.remove('on');
+  });
+}
+
+function resetForm() {
+  document.getElementById('f-handle').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-city').value = '';
+  document.getElementById('f-merch').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('fan-search').value = '';
+  document.querySelectorAll('#new-fan-form .toggle').forEach(t => {
+    if (t.dataset.field === 'attended_show') t.classList.add('on');
+    else t.classList.remove('on');
+  });
+}
+
+// ----- SEARCH / AUTOCOMPLETE -----
+function setupSearch() {
+  let debounce;
+  const input = document.getElementById('fan-search');
+  const results = document.getElementById('ac-results');
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = input.value.trim();
+    if (q.length < 2) { results.classList.remove('show'); return; }
+    debounce = setTimeout(async () => {
+      const fans = await api(`/api/fans/search?q=${encodeURIComponent(q)}`);
+      if (fans.length === 0) { results.classList.remove('show'); return; }
+      results.innerHTML = fans.map(f =>
+        `<div class="ac-item" data-id="${f.id}" data-handle="${f.handle}" data-platform="${f.platform}" data-name="${f.real_name || ''}">
+          <span class="ac-handle">@${f.handle}</span>
+          <span class="ac-platform">${f.platform}${f.real_name ? ' · ' + f.real_name : ''}${f.city ? ' · ' + f.city : ''}</span>
+        </div>`
+      ).join('');
+      results.classList.add('show');
+
+      results.querySelectorAll('.ac-item').forEach(item => {
+        item.addEventListener('click', () => {
+          selectReturningFan({
+            id: parseInt(item.dataset.id),
+            handle: item.dataset.handle,
+            platform: item.dataset.platform,
+            real_name: item.dataset.name
+          });
+          results.classList.remove('show');
+        });
+      });
+    }, 300);
+  });
+
+  // Dashboard search
+  document.getElementById('dash-search').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#fan-list .fan-row').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? 'flex' : 'none';
+    });
+  });
+}
+
+function selectReturningFan(fan) {
+  selectedReturningFan = fan;
+  document.getElementById('new-fan-form').style.display = 'none';
+  document.getElementById('returning-fan-form').style.display = 'block';
+  document.getElementById('rf-handle').textContent = '@' + fan.handle;
+  document.getElementById('rf-meta').textContent = `${fan.platform}${fan.real_name ? ' · ' + fan.real_name : ''}`;
+  const name = localStorage.getItem('fi-name');
+  if (name) document.getElementById('rf-enteredby').value = name;
+}
+
+// ----- DASHBOARD -----
+async function loadDashboard() {
+  const [fans, stats] = await Promise.all([api('/api/dashboard'), api('/api/stats')]);
+
+  document.getElementById('s-fans').textContent = stats.total_fans;
+  document.getElementById('s-sightings').textContent = stats.total_sightings;
+  document.getElementById('s-shows').textContent = stats.shows_logged;
+  document.getElementById('s-cities').textContent = stats.top_cities.length;
+
+  const list = document.getElementById('fan-list');
+  if (fans.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2)">No fans yet. Start adding!</div>';
+    return;
+  }
+
+  list.innerHTML = fans.map((f, i) => `
+    <div class="fan-row" data-id="${f.id}">
+      <div class="fan-rank ${i < 3 ? 'top3' : ''}">${i + 1}</div>
+      <div class="fan-info">
+        <div class="fan-handle">@${f.handle}</div>
+        <div class="fan-meta">${f.platform}${f.real_name ? ' · ' + f.real_name : ''}${f.city ? ' · ' + f.city : ''} · ${f.shows_attended} show${f.shows_attended != 1 ? 's' : ''}</div>
+      </div>
+      <div class="fan-score">${f.score}</div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.fan-row').forEach(row => {
+    row.addEventListener('click', () => openFanModal(parseInt(row.dataset.id), fans));
+  });
+}
+
+async function openFanModal(fanId, fans) {
+  const fan = fans.find(f => f.id === fanId);
+  if (!fan) return;
+
+  document.getElementById('modal-handle').textContent = '@' + fan.handle;
+  document.getElementById('modal-meta').textContent =
+    `${fan.platform} · Score: ${fan.score} · ${fan.shows_attended} shows${fan.city ? ' · ' + fan.city : ''}`;
+
+  const sightings = await api(`/api/fans/${fanId}/sightings`);
+  const container = document.getElementById('modal-sightings');
+
+  if (sightings.length === 0) {
+    container.innerHTML = '<p style="color:var(--text2)">No sightings logged yet.</p>';
+  } else {
+    container.innerHTML = sightings.map(s => {
+      const d = new Date(s.date);
+      const behaviors = [];
+      if (s.bought_merch) behaviors.push('Bought merch');
+      if (s.creates_content) behaviors.push('Creates content');
+      if (s.shared_reposted) behaviors.push('Shares/reposts');
+      if (s.commented_repeatedly) behaviors.push('Comments');
+      if (s.frequent_dms) behaviors.push('DMs');
+      if (s.runs_fan_page) behaviors.push('Fan page');
+      return `<div class="card">
+        <div style="font-weight:600">${s.venue} — ${s.city}</div>
+        <div style="font-size:12px;color:var(--text2);margin:4px 0">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${s.entered_by ? ' · by ' + s.entered_by : ''}</div>
+        ${behaviors.length ? '<div style="font-size:13px;margin-top:6px">' + behaviors.join(' · ') + '</div>' : ''}
+        ${s.merch_items ? '<div style="font-size:13px;color:var(--accent);margin-top:4px">Merch: ' + s.merch_items + '</div>' : ''}
+        ${s.notes ? '<div style="font-size:13px;color:var(--text2);margin-top:4px">' + s.notes + '</div>' : ''}
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('fan-modal').classList.add('show');
+}
+
+// Close modal
+document.getElementById('fan-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('fan-modal')) {
+    document.getElementById('fan-modal').classList.remove('show');
+  }
+});
+
+// ----- TOAST -----
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isError ? 'var(--red)' : 'var(--green)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
