@@ -434,6 +434,15 @@
     </div>
 
     <div id="new-fan-form">
+      <!-- Screenshot scan -->
+      <div class="card" style="text-align:center;padding:14px">
+        <input type="file" id="screenshot-input" accept="image/*" capture="environment" style="display:none">
+        <button class="btn btn-secondary" id="btn-scan" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%">
+          <span style="font-size:18px">📷</span> Scan Profile Screenshot
+        </button>
+        <div id="scan-status" style="font-size:13px;color:var(--text2);margin-top:8px;display:none"></div>
+      </div>
+
       <div class="card">
         <div class="form-group">
           <label>Handle</label>
@@ -679,6 +688,7 @@ async function init() {
   setupNav();
   setupForm();
   setupSearch();
+  setupScreenshot();
   if (savedName) {
     document.getElementById('f-enteredby').value = savedName;
     document.getElementById('rf-enteredby').value = savedName;
@@ -781,6 +791,64 @@ function setupForm() {
     selectedReturningFan = null;
     document.getElementById('returning-fan-form').style.display = 'none';
     document.getElementById('new-fan-form').style.display = 'block';
+  });
+}
+
+// ----- SCREENSHOT SCAN -----
+function setupScreenshot() {
+  const btn = document.getElementById('btn-scan');
+  const input = document.getElementById('screenshot-input');
+  const status = document.getElementById('scan-status');
+
+  btn.addEventListener('click', () => input.click());
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    status.style.display = 'block';
+    status.textContent = 'Scanning...';
+    btn.style.opacity = '0.5';
+    btn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('screenshot', file);
+
+      const res = await fetch('/api/scan-screenshot?pin=' + PIN, {
+        method: 'POST',
+        headers: { 'x-pin': PIN },
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Scan failed');
+      const data = await res.json();
+
+      // Pre-fill form
+      if (data.handle) document.getElementById('f-handle').value = data.handle.replace(/^@/, '');
+      if (data.real_name) document.getElementById('f-name').value = data.real_name;
+      if (data.city) document.getElementById('f-city').value = data.city;
+      if (data.platform) {
+        document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+        const match = document.querySelector(`.platform-btn[data-val="${data.platform}"]`);
+        if (match) match.classList.add('active');
+      }
+
+      status.textContent = 'Done — review and save';
+      status.style.color = 'var(--green)';
+      toast('Profile scanned!');
+    } catch (err) {
+      status.textContent = 'Scan failed — enter manually';
+      status.style.color = 'var(--red)';
+    } finally {
+      btn.style.opacity = '1';
+      btn.disabled = false;
+      input.value = '';
+      setTimeout(() => {
+        status.style.display = 'none';
+        status.style.color = 'var(--text2)';
+      }, 3000);
+    }
   });
 }
 

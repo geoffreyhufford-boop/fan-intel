@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const Anthropic = require('@anthropic-ai/sdk');
+const multer = require('multer');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +12,9 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
+
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -197,6 +202,53 @@ app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
     }
 
     res.json({ success: true, imported: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- SCREENSHOT SCAN ----------
+
+app.post('/api/scan-screenshot', requireAuth, upload.single('screenshot'), async (req, res) => {
+  if (!anthropic) return res.status(500).json({ error: 'AI not configured' });
+  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+
+  try {
+    const base64 = req.file.buffer.toString('base64');
+    const mediaType = req.file.mimetype || 'image/jpeg';
+
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mediaType, data: base64 }
+          },
+          {
+            type: 'text',
+            text: `Extract fan profile info from this social media screenshot. Return ONLY valid JSON with these fields:
+{
+  "handle": "username without @",
+  "platform": "instagram" or "tiktok" or "other",
+  "real_name": "display name or null",
+  "city": "city from bio or null"
+}
+If you can't determine a field, use null. Only return the JSON object, nothing else.`
+          }
+        ]
+      }]
+    });
+
+    const text = response.content[0].text.trim();
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: 'Could not parse AI response' });
+
+    const data = JSON.parse(jsonMatch[0]);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
