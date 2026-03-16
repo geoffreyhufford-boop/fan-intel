@@ -280,14 +280,14 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
       f.id, f.handle, f.platform, f.real_name, f.city, f.fan_type, f.notes,
       COUNT(DISTINCT s.show_id) AS shows_attended,
       CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.shared_reposted) THEN 4 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.bought_merch) THEN 5 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.attended_show) THEN 3 ELSE 0 END +
-      CASE WHEN COUNT(DISTINCT s.show_id) > 1 THEN 10 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 8 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.creates_content) THEN 6 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.frequent_dms) THEN 2 ELSE 0 END +
-      (COUNT(DISTINCT s.show_id) - 1) * 3 AS score,
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
+      GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS score,
       MAX(s.created_at) AS last_seen
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
@@ -316,13 +316,13 @@ app.get('/api/export.csv', requireAuth, async (req, res) => {
       f.fan_type AS "Fan Type",
       f.notes AS "Notes",
       CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.shared_reposted) THEN 4 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.bought_merch) THEN 5 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.attended_show) THEN 3 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
       CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 8 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.creates_content) THEN 6 ELSE 0 END +
-      CASE WHEN BOOL_OR(s.frequent_dms) THEN 2 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
       GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS "Score"
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
