@@ -279,14 +279,15 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
     SELECT
       f.id, f.handle, f.platform, f.real_name, f.city, f.fan_type, f.notes,
       COUNT(DISTINCT s.show_id) AS shows_attended,
-      COALESCE(SUM(CASE WHEN s.commented_repeatedly THEN 3 ELSE 0 END), 0) +
-      COALESCE(SUM(CASE WHEN s.shared_reposted THEN 4 ELSE 0 END), 0) +
-      COALESCE(SUM(CASE WHEN s.bought_merch THEN 5 ELSE 0 END), 0) +
-      COALESCE(SUM(CASE WHEN s.attended_show THEN 3 ELSE 0 END), 0) +
-      COALESCE(COUNT(DISTINCT s.show_id) * CASE WHEN COUNT(DISTINCT s.show_id) > 1 THEN 10 ELSE 0 END, 0) +
-      COALESCE(SUM(CASE WHEN s.runs_fan_page THEN 8 ELSE 0 END), 0) +
-      COALESCE(SUM(CASE WHEN s.creates_content THEN 6 ELSE 0 END), 0) +
-      COALESCE(SUM(CASE WHEN s.frequent_dms THEN 2 ELSE 0 END), 0) AS score,
+      CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 4 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 5 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.attended_show) THEN 3 ELSE 0 END +
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 THEN 10 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 8 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.creates_content) THEN 6 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 2 ELSE 0 END +
+      (COUNT(DISTINCT s.show_id) - 1) * 3 AS score,
       MAX(s.created_at) AS last_seen
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
