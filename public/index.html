@@ -556,10 +556,37 @@
       <div class="stat-box"><div class="stat-num" id="s-cities">0</div><div class="stat-label">Cities</div></div>
     </div>
 
-    <button class="btn btn-secondary" style="margin-bottom:16px" onclick="window.location.href='/api/export.csv?pin='+PIN">Export CSV</button>
+    <button class="btn btn-secondary" style="margin-bottom:12px" onclick="window.location.href='/api/export.csv?pin='+PIN">Export CSV</button>
+
+    <!-- FILTERS -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">
+      <select id="filter-pct" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;min-width:fit-content">
+        <option value="100">All fans</option>
+        <option value="3">Top 3%</option>
+        <option value="5">Top 5%</option>
+        <option value="10">Top 10%</option>
+        <option value="20">Top 20%</option>
+        <option value="50">Top 50%</option>
+      </select>
+      <select id="filter-platform" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;min-width:fit-content">
+        <option value="">All platforms</option>
+        <option value="instagram">Instagram</option>
+        <option value="tiktok">TikTok</option>
+        <option value="irl">IRL</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="filter-city" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;min-width:fit-content">
+        <option value="">All cities</option>
+      </select>
+      <select id="filter-type" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;min-width:fit-content">
+        <option value="">All types</option>
+      </select>
+    </div>
+
+    <div id="filter-summary" style="font-size:13px;color:var(--accent);margin-bottom:12px;display:none"></div>
 
     <div class="search-box">
-      <input type="text" id="dash-search" placeholder="Filter fans..." autocomplete="off">
+      <input type="text" id="dash-search" placeholder="Search fans..." autocomplete="off">
     </div>
 
     <div class="card" id="fan-list" style="padding:0;overflow:hidden"></div>
@@ -903,21 +930,78 @@ function selectReturningFan(fan) {
 }
 
 // ----- DASHBOARD -----
+let allFans = [];
+
 async function loadDashboard() {
   const [fans, stats] = await Promise.all([api('/api/dashboard'), api('/api/stats')]);
+  allFans = fans;
 
   document.getElementById('s-fans').textContent = stats.total_fans;
   document.getElementById('s-sightings').textContent = stats.total_sightings;
   document.getElementById('s-shows').textContent = stats.shows_logged;
   document.getElementById('s-cities').textContent = stats.top_cities.length;
 
+  // Populate city filter
+  const citySelect = document.getElementById('filter-city');
+  const cities = [...new Set(fans.map(f => f.city).filter(c => c && c.toLowerCase() !== 'unknown'))].sort();
+  citySelect.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  // Populate type filter
+  const typeSelect = document.getElementById('filter-type');
+  const types = [...new Set(fans.map(f => f.fan_type).filter(Boolean))].sort();
+  typeSelect.innerHTML = '<option value="">All types</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  // Setup filter listeners (only once)
+  if (!window._filtersSetup) {
+    ['filter-pct', 'filter-platform', 'filter-city', 'filter-type'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderFanList);
+    });
+    window._filtersSetup = true;
+  }
+
+  renderFanList();
+}
+
+function renderFanList() {
+  const pct = parseInt(document.getElementById('filter-pct').value);
+  const platform = document.getElementById('filter-platform').value;
+  const city = document.getElementById('filter-city').value;
+  const fanType = document.getElementById('filter-type').value;
+
+  let filtered = [...allFans];
+
+  // Apply percentage filter first (on full ranked list)
+  if (pct < 100) {
+    const cutoff = Math.max(1, Math.ceil(filtered.length * pct / 100));
+    filtered = filtered.slice(0, cutoff);
+  }
+
+  // Then apply other filters
+  if (platform) filtered = filtered.filter(f => f.platform === platform);
+  if (city) filtered = filtered.filter(f => f.city && f.city.toLowerCase() === city.toLowerCase());
+  if (fanType) filtered = filtered.filter(f => f.fan_type === fanType);
+
+  // Summary
+  const summary = document.getElementById('filter-summary');
+  if (pct < 100 || platform || city || fanType) {
+    const parts = [];
+    if (pct < 100) parts.push(`Top ${pct}%`);
+    if (platform) parts.push(platform);
+    if (city) parts.push(city);
+    if (fanType) parts.push(fanType);
+    summary.textContent = `${parts.join(' · ')} — ${filtered.length} fan${filtered.length !== 1 ? 's' : ''}`;
+    summary.style.display = 'block';
+  } else {
+    summary.style.display = 'none';
+  }
+
   const list = document.getElementById('fan-list');
-  if (fans.length === 0) {
-    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2)">No fans yet. Start adding!</div>';
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text2)">No fans match filters</div>';
     return;
   }
 
-  list.innerHTML = fans.map((f, i) => `
+  list.innerHTML = filtered.map((f, i) => `
     <div class="fan-row" data-id="${f.id}">
       <div class="fan-rank ${i < 3 ? 'top3' : ''}">${i + 1}</div>
       <div class="fan-info">
@@ -929,7 +1013,7 @@ async function loadDashboard() {
   `).join('');
 
   list.querySelectorAll('.fan-row').forEach(row => {
-    row.addEventListener('click', () => openFanModal(parseInt(row.dataset.id), fans));
+    row.addEventListener('click', () => openFanModal(parseInt(row.dataset.id), allFans));
   });
 }
 
