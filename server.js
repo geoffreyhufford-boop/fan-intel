@@ -297,6 +297,54 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
   res.json(rows);
 });
 
+// CSV Export (matches original spreadsheet format)
+app.get('/api/export.csv', requireAuth, async (req, res) => {
+  const { rows } = await pool.query(`
+    SELECT
+      f.handle AS "Fan Handle",
+      f.platform AS "Platform",
+      f.real_name AS "Real Name",
+      f.city AS "City",
+      CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 'YES' ELSE 'NO' END AS "Commented Repeatedly",
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 'YES' ELSE 'NO' END AS "Shared/Reposted",
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 'YES' ELSE 'NO' END AS "Bought Merch",
+      CASE WHEN BOOL_OR(s.attended_show) THEN 'YES' ELSE 'NO' END AS "Attended Show",
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 'YES' ELSE 'NO' END AS "Attended Multiple Shows",
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 'YES' ELSE 'NO' END AS "Runs Fan Page",
+      CASE WHEN BOOL_OR(s.creates_content) THEN 'YES' ELSE 'NO' END AS "Creates Content / Edits",
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 'YES' ELSE 'NO' END AS "Frequent DMs / Replies",
+      f.fan_type AS "Fan Type",
+      f.notes AS "Notes",
+      CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 4 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 5 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.attended_show) THEN 3 ELSE 0 END +
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 8 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.creates_content) THEN 6 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 2 ELSE 0 END +
+      GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS "Score"
+    FROM fans f
+    LEFT JOIN sightings s ON s.fan_id = f.id
+    GROUP BY f.id
+    ORDER BY "Score" DESC
+  `);
+
+  const headers = ['Fan Handle','Platform','Real Name','City','Commented Repeatedly','Shared/Reposted','Bought Merch','Attended Show','Attended Multiple Shows','Runs Fan Page','Creates Content / Edits','Frequent DMs / Replies','Fan Type','Notes','Score'];
+  const csvRows = [headers.join(',')];
+  for (const r of rows) {
+    csvRows.push(headers.map(h => {
+      const val = r[h] ?? '';
+      const str = String(val);
+      return str.includes(',') || str.includes('"') || str.includes('\n') ? '"' + str.replace(/"/g, '""') + '"' : str;
+    }).join(','));
+  }
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="fan-intel-export.csv"');
+  res.send(csvRows.join('\n'));
+});
+
 // Stats
 app.get('/api/stats', requireAuth, async (req, res) => {
   const fans = await pool.query('SELECT COUNT(*) FROM fans');
