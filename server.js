@@ -197,6 +197,14 @@ app.post('/api/seed-spreadsheet', requireAuth, async (req, res) => {
   }
 });
 
+// One-time fix: rachel_erin_80 attended_multiple was wrong in seed
+app.post('/api/fix-rachel', requireAuth, async (req, res) => {
+  const fan = await pool.query("SELECT id FROM fans WHERE handle = 'rachel_erin_80'");
+  if (fan.rows.length === 0) return res.json({ error: 'not found' });
+  await pool.query("UPDATE sightings SET attended_multiple = true WHERE fan_id = $1", [fan.rows[0].id]);
+  res.json({ success: true, fixed: 'rachel_erin_80 attended_multiple = true' });
+});
+
 // ---------- API ROUTES ----------
 
 // Get all shows
@@ -279,7 +287,6 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
     SELECT
       f.id, f.handle, f.platform, f.real_name, f.city, f.fan_type, f.notes,
       COUNT(DISTINCT s.show_id) AS shows_attended,
-      CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
       CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
       CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
       CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
@@ -315,7 +322,6 @@ app.get('/api/export.csv', requireAuth, async (req, res) => {
       CASE WHEN BOOL_OR(s.frequent_dms) THEN 'YES' ELSE 'NO' END AS "Frequent DMs / Replies",
       f.fan_type AS "Fan Type",
       f.notes AS "Notes",
-      CASE WHEN BOOL_OR(s.commented_repeatedly) THEN 3 ELSE 0 END +
       CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
       CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
       CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
