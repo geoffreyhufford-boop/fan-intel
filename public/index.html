@@ -995,6 +995,7 @@ async function switchArtist(artistId) {
   await loadShows();
   loadTonight();
   await loadDashboard();
+  loadInsights();
   // Reset search and filters
   document.getElementById('dash-search').value = '';
   document.getElementById('filter-pct').value = '100';
