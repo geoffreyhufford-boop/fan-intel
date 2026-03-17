@@ -319,11 +319,11 @@ app.post('/api/reseed-brothel', requireAuth, async (req, res) => {
     for (const fan of fans) {
       const behaviors = pool2[count % pool2.length];
       await pool.query(
-        \`INSERT INTO sightings (fan_id, show_id, entered_by,
+        `INSERT INTO sightings (fan_id, show_id, entered_by,
           commented_repeatedly, shared_reposted, bought_merch,
           attended_show, attended_multiple, runs_fan_page,
           creates_content, frequent_dms)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)\`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [fan.id, showId, 'score-seed',
          behaviors.commented_repeatedly || false,
          behaviors.shared_reposted || false,
