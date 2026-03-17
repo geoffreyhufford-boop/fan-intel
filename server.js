@@ -774,29 +774,30 @@ app.get('/api/insights', requireAuth, async (req, res) => {
 
   // Score distribution (buckets)
   const scoreDist = await pool.query(`
-    SELECT
-      CASE
-        WHEN score <= 10 THEN 'casual'
-        WHEN score <= 20 THEN 'engaged'
-        WHEN score <= 30 THEN 'super'
-        ELSE 'evangelist'
-      END AS tier,
-      COUNT(*) as count
-    FROM (
-      SELECT f.id,
-        CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
-        CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
-        CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
-        CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
-        CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
-        CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
-        CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
-        GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS score
-      FROM fans f
-      LEFT JOIN sightings s ON s.fan_id = f.id
-      WHERE f.artist_id = $1
-      GROUP BY f.id
-    ) scored
+    SELECT tier, COUNT(*) as count FROM (
+      SELECT
+        CASE
+          WHEN score <= 10 THEN 'casual'
+          WHEN score <= 20 THEN 'engaged'
+          WHEN score <= 30 THEN 'super'
+          ELSE 'evangelist'
+        END AS tier
+      FROM (
+        SELECT f.id,
+          CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
+          CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
+          CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
+          CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
+          CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
+          CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
+          CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
+          GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS score
+        FROM fans f
+        LEFT JOIN sightings s ON s.fan_id = f.id
+        WHERE f.artist_id = $1
+        GROUP BY f.id
+      ) scored
+    ) tiered
     GROUP BY tier
     ORDER BY CASE tier WHEN 'casual' THEN 1 WHEN 'engaged' THEN 2 WHEN 'super' THEN 3 ELSE 4 END
   `, [artistId]);
