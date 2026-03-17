@@ -727,7 +727,7 @@ pinInput.addEventListener('input', async () => {
   if (pinInput.value.length === 4) {
     PIN = pinInput.value;
     try {
-      const res = await api('/api/shows/tonight');
+      const res = await api('/api/artists');
       if (res) {
         localStorage.setItem('fi-pin', PIN);
         document.getElementById('pin-screen').style.display = 'none';
@@ -746,7 +746,7 @@ pinInput.addEventListener('input', async () => {
 const saved = localStorage.getItem('fi-pin');
 if (saved) {
   PIN = saved;
-  fetch('/api/shows/tonight?pin=' + PIN).then(r => {
+  fetch('/api/artists?pin=' + PIN).then(r => {
     if (r.ok) {
       document.getElementById('pin-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
@@ -824,7 +824,13 @@ async function switchArtist(artistId) {
   applyArtistTheme();
   await loadShows();
   loadTonight();
-  loadDashboard();
+  await loadDashboard();
+  // Reset search and filters
+  document.getElementById('dash-search').value = '';
+  document.getElementById('filter-pct').value = '100';
+  document.getElementById('filter-platform').value = '';
+  document.getElementById('filter-city').value = '';
+  document.getElementById('filter-type').value = '';
 }
 
 function setupArtistSwitcher() {
@@ -874,6 +880,7 @@ async function loadShows() {
   const artistParam = currentArtist ? `?artist_id=${currentArtist.id}` : '';
   shows = await api('/api/shows' + artistParam);
   const select = document.getElementById('f-show');
+  select.innerHTML = '';
   const today = new Date().toISOString().split('T')[0];
   let closestIdx = 0;
   let closestDiff = Infinity;
