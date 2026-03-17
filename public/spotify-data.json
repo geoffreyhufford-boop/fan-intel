@@ -1,0 +1,72 @@
+{
+  "two-feet": {
+    "updated": "2026-03-16",
+    "demographics": {
+      "gender": { "female": 54, "male": 41, "non_binary": 1, "not_specified": 4 },
+      "age": [
+        { "range": "<18", "pct": 3 },
+        { "range": "18-24", "pct": 28 },
+        { "range": "25-34", "pct": 45 },
+        { "range": "35-44", "pct": 15 },
+        { "range": "45-54", "pct": 6 },
+        { "range": "55-64", "pct": 2 },
+        { "range": "65+", "pct": 1 }
+      ]
+    },
+    "top_countries": [
+      { "country": "United States", "listeners": 1200000, "active_pct": 58 },
+      { "country": "Brazil", "listeners": 813322, "active_pct": 41.5 },
+      { "country": "Mexico", "listeners": 732885, "active_pct": 63.7 },
+      { "country": "Germany", "listeners": 461047, "active_pct": 57.2 },
+      { "country": "France", "listeners": 321045, "active_pct": 53.7 },
+      { "country": "Canada", "listeners": 292534, "active_pct": 61.6 },
+      { "country": "United Kingdom", "listeners": 268083, "active_pct": 56.5 },
+      { "country": "Poland", "listeners": 222827, "active_pct": 53.2 },
+      { "country": "Australia", "listeners": 199932, "active_pct": 59.7 },
+      { "country": "Turkey", "listeners": 185462, "active_pct": 46.9 }
+    ],
+    "top_cities": [
+      { "city": "Mexico City", "region": "Mexico", "listeners": 179905, "lat": 19.43, "lon": -99.13 },
+      { "city": "São Paulo", "region": "Brazil", "listeners": 135428, "lat": -23.55, "lon": -46.63 },
+      { "city": "Istanbul", "region": "Turkey", "listeners": 67571, "lat": 41.01, "lon": 28.98 },
+      { "city": "Santiago", "region": "Chile", "listeners": 61759, "lat": -33.45, "lon": -70.67 },
+      { "city": "London", "region": "UK", "listeners": 58500, "lat": 51.51, "lon": -0.13 },
+      { "city": "Warsaw", "region": "Poland", "listeners": 58321, "lat": 52.23, "lon": 21.01 },
+      { "city": "Bogotá", "region": "Colombia", "listeners": 55622, "lat": 4.71, "lon": -74.07 },
+      { "city": "Sydney", "region": "Australia", "listeners": 54174, "lat": -33.87, "lon": 151.21 },
+      { "city": "Berlin", "region": "Germany", "listeners": 48012, "lat": 52.52, "lon": 13.41 },
+      { "city": "Brisbane", "region": "Australia", "listeners": 47149, "lat": -27.47, "lon": 153.03 },
+      { "city": "Montreal", "region": "Canada", "listeners": 46311, "lat": 45.50, "lon": -73.57 },
+      { "city": "Rio de Janeiro", "region": "Brazil", "listeners": 45547, "lat": -22.91, "lon": -43.17 },
+      { "city": "Prague", "region": "Czech Republic", "listeners": 42812, "lat": 50.08, "lon": 14.44 },
+      { "city": "Melbourne", "region": "Australia", "listeners": 42355, "lat": -37.81, "lon": 144.96 },
+      { "city": "Guadalajara", "region": "Mexico", "listeners": 42256, "lat": 20.67, "lon": -103.35 },
+      { "city": "Chicago", "region": "US, IL", "listeners": 38795, "lat": 41.88, "lon": -87.63 },
+      { "city": "Belo Horizonte", "region": "Brazil", "listeners": 38224, "lat": -19.92, "lon": -43.94 },
+      { "city": "Los Angeles", "region": "US, CA", "listeners": 37403, "lat": 34.05, "lon": -118.24 },
+      { "city": "Frankfurt", "region": "Germany", "listeners": 37047, "lat": 50.11, "lon": 8.68 },
+      { "city": "Medellín", "region": "Colombia", "listeners": 36961, "lat": 6.25, "lon": -75.56 },
+      { "city": "Denver", "region": "US, CO", "listeners": 36479, "lat": 39.74, "lon": -104.99 },
+      { "city": "Puebla", "region": "Mexico", "listeners": 36477, "lat": 19.04, "lon": -98.21 },
+      { "city": "Dallas", "region": "US, TX", "listeners": 36245, "lat": 32.78, "lon": -96.80 },
+      { "city": "Toronto", "region": "Canada", "listeners": 34493, "lat": 43.65, "lon": -79.38 },
+      { "city": "Curitiba", "region": "Brazil", "listeners": 33942, "lat": -25.43, "lon": -49.27 },
+      { "city": "Munich", "region": "Germany", "listeners": 33702, "lat": 48.14, "lon": 11.58 },
+      { "city": "Lima", "region": "Peru", "listeners": 33041, "lat": -12.05, "lon": -77.04 },
+      { "city": "Brasília", "region": "Brazil", "listeners": 32034, "lat": -15.79, "lon": -47.88 },
+      { "city": "Budapest", "region": "Hungary", "listeners": 31714, "lat": 47.50, "lon": 19.04 },
+      { "city": "Hamburg", "region": "Germany", "listeners": 31592, "lat": 53.55, "lon": 9.99 },
+      { "city": "Houston", "region": "US, TX", "listeners": 29785, "lat": 29.76, "lon": -95.37 },
+      { "city": "Madrid", "region": "Spain", "listeners": 29604, "lat": 40.42, "lon": -3.70 },
+      { "city": "New York", "region": "US, NY", "listeners": 28738, "lat": 40.71, "lon": -74.01 },
+      { "city": "Vienna", "region": "Austria", "listeners": 28298, "lat": 48.21, "lon": 16.37 },
+      { "city": "Ankara", "region": "Turkey", "listeners": 28254, "lat": 39.93, "lon": 32.85 },
+      { "city": "Paris", "region": "France", "listeners": 27961, "lat": 48.86, "lon": 2.35 },
+      { "city": "Phoenix", "region": "US, AZ", "listeners": 24745, "lat": 33.45, "lon": -112.07 },
+      { "city": "San Antonio", "region": "US, TX", "listeners": 22553, "lat": 29.42, "lon": -98.49 },
+      { "city": "Seattle", "region": "US, WA", "listeners": 22515, "lat": 47.61, "lon": -122.33 },
+      { "city": "Portland", "region": "US, OR", "listeners": 22512, "lat": 45.52, "lon": -122.68 },
+      { "city": "Atlanta", "region": "US, GA", "listeners": 21573, "lat": 33.75, "lon": -84.39 }
+    ]
+  }
+}

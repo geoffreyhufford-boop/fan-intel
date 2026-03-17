@@ -845,6 +845,63 @@
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who follow multiple artists — shared audience signals</div>
       <div id="crossover-list" style="margin:0 -16px"></div>
     </div>
+
+    <!-- SPOTIFY SECTION -->
+    <div id="spotify-section" style="display:none">
+      <div style="font-size:20px;font-weight:700;margin:24px 0 16px;display:flex;align-items:center;gap:8px">
+        <span style="color:#1DB954">●</span> Spotify Data
+      </div>
+
+      <!-- Streaming Trends -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming Trends</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Daily data since Jan 2024</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap" id="trend-metric-picker"></div>
+        <canvas id="trend-chart" style="width:100%;height:180px"></canvas>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:4px">
+          <span id="trend-start"></span><span id="trend-end"></span>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap" id="trend-stats"></div>
+      </div>
+
+      <!-- Demographics -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Demographics</div>
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <div style="flex-shrink:0">
+            <svg id="gender-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
+          </div>
+          <div id="gender-legend" style="flex:1;min-width:100px"></div>
+        </div>
+        <div style="margin-top:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px">AGE DISTRIBUTION</div>
+          <div id="age-bars"></div>
+        </div>
+      </div>
+
+      <!-- Streaming Map -->
+      <div class="card" style="margin-bottom:16px;padding:16px 16px 8px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming vs Superfans Map</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+          <span style="color:#1DB954">●</span> Spotify listeners &nbsp;
+          <span style="color:${currentArtist ? currentArtist.color : '#ff6b35'}">●</span> Identified superfans
+        </div>
+        <div id="spotify-map" style="width:100%;height:300px;border-radius:10px;overflow:hidden"></div>
+      </div>
+
+      <!-- Market Gap -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Market Gaps</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">US cities with high streams but no superfans identified — untapped potential</div>
+        <div id="market-gaps"></div>
+      </div>
+
+      <!-- Top Countries -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Countries</div>
+        <div class="bar-chart" id="country-bars"></div>
+      </div>
+    </div>
   </div>
 
   <!-- NAV -->
@@ -1702,6 +1759,219 @@ async function loadInsights() {
         <div class="crossover-badge">${c.artist_count} artists</div>
       </div>`
     ).join('');
+  }
+
+  // ----- SPOTIFY DATA -----
+  await loadSpotifyInsights(insights, cityCoords);
+}
+
+async function loadSpotifyInsights(insights, cityCoords) {
+  if (!currentArtist) return;
+  const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+
+  let spotifyData;
+  try {
+    const resp = await fetch('/spotify-data.json');
+    const allData = await resp.json();
+    spotifyData = allData[slug];
+  } catch (e) {}
+
+  const section = document.getElementById('spotify-section');
+  if (!spotifyData) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  // --- Demographics: Gender donut ---
+  const gender = spotifyData.demographics.gender;
+  const gColors = { female: '#818cf8', male: '#f472b6', non_binary: '#4ade80', not_specified: '#666' };
+  const gLabels = { female: 'Female', male: 'Male', non_binary: 'Non-binary', not_specified: 'Not specified' };
+  const cx2 = 55, cy2 = 55, r2 = 40, sw2 = 14;
+  const circ2 = 2 * Math.PI * r2;
+  let off2 = 0, gPaths = '';
+  for (const [key, pct] of Object.entries(gender)) {
+    if (pct === 0) continue;
+    const dashLen = (pct / 100) * circ2;
+    gPaths += `<circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="none" stroke="${gColors[key]}" stroke-width="${sw2}" stroke-dasharray="${dashLen} ${circ2 - dashLen}" stroke-dashoffset="${-off2}" transform="rotate(-90 ${cx2} ${cy2})" />`;
+    off2 += dashLen;
+  }
+  document.getElementById('gender-donut').innerHTML = gPaths;
+  document.getElementById('gender-legend').innerHTML = Object.entries(gender).map(([k, v]) =>
+    `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <div style="width:10px;height:10px;border-radius:3px;background:${gColors[k]}"></div>
+      <div style="font-size:13px;flex:1">${gLabels[k]}</div>
+      <div style="font-size:14px;font-weight:700;color:${gColors[k]}">${v}%</div>
+    </div>`
+  ).join('');
+
+  // --- Demographics: Age bars ---
+  const maxAge = Math.max(...spotifyData.demographics.age.map(a => a.pct));
+  document.getElementById('age-bars').innerHTML = spotifyData.demographics.age.map(a =>
+    `<div class="bar-row">
+      <div class="bar-label" style="width:50px">${a.range}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${a.pct / maxAge * 100}%;background:#818cf8"></div></div>
+      <div class="bar-val">${a.pct}%</div>
+    </div>`
+  ).join('');
+
+  // --- Streaming Map (Spotify + superfans) ---
+  const sMapEl = document.getElementById('spotify-map');
+  if (window._spotifyMap) { window._spotifyMap.remove(); window._spotifyMap = null; }
+  const sMap = L.map(sMapEl, { zoomControl: false, attributionControl: false }).setView([20, 0], 2);
+  window._spotifyMap = sMap;
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(sMap);
+
+  const maxListeners = Math.max(...spotifyData.top_cities.map(c => c.listeners));
+  // Spotify listener dots (green)
+  for (const c of spotifyData.top_cities) {
+    const rad = Math.max(4, Math.min(18, 4 + (c.listeners / maxListeners) * 14));
+    L.circleMarker([c.lat, c.lon], {
+      radius: rad, fillColor: '#1DB954', color: '#1DB954', weight: 1, opacity: 0.8, fillOpacity: 0.3
+    }).addTo(sMap).bindPopup(`<b>${c.city}</b><br>${c.listeners.toLocaleString()} Spotify listeners`);
+  }
+  // Superfan dots (accent color) — overlay from fan-intel data
+  const fanAccent = currentArtist.color || '#ff6b35';
+  for (const c of insights.cities) {
+    const key = c.city.toLowerCase();
+    const coords = cityCoords[key];
+    if (!coords) continue;
+    const count = parseInt(c.count);
+    L.circleMarker(coords, {
+      radius: Math.max(5, count * 3), fillColor: fanAccent, color: fanAccent, weight: 2, opacity: 1, fillOpacity: 0.7
+    }).addTo(sMap).bindPopup(`<b>${c.city}</b><br>${count} identified superfan${count > 1 ? 's' : ''}`);
+  }
+  setTimeout(() => sMap.invalidateSize(), 200);
+
+  // --- Market Gaps ---
+  const usCities = spotifyData.top_cities.filter(c => c.region && c.region.startsWith('US'));
+  const fanCitySet = new Set(insights.cities.map(c => c.city.toLowerCase()));
+  const gaps = usCities.filter(c => {
+    const name = c.city.toLowerCase();
+    return !fanCitySet.has(name) && !fanCitySet.has(name.split(',')[0]);
+  });
+  const gapEl = document.getElementById('market-gaps');
+  if (gaps.length === 0) {
+    gapEl.innerHTML = '<div style="color:var(--text2);font-size:13px">All major streaming markets have superfans identified</div>';
+  } else {
+    gapEl.innerHTML = gaps.map(g =>
+      `<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px">${g.city}</div>
+          <div style="font-size:12px;color:var(--text2)">${g.region}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:#1DB954">${(g.listeners / 1000).toFixed(1)}K</div>
+          <div style="font-size:11px;color:var(--text2)">listeners</div>
+        </div>
+        <div style="margin-left:12px;background:#f87171;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px">0 superfans</div>
+      </div>`
+    ).join('');
+  }
+
+  // --- Top Countries ---
+  const maxCountry = Math.max(...spotifyData.top_countries.map(c => c.listeners));
+  document.getElementById('country-bars').innerHTML = spotifyData.top_countries.map(c =>
+    `<div class="bar-row">
+      <div class="bar-label" style="width:90px">${c.country}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${c.listeners / maxCountry * 100}%;background:#1DB954"></div></div>
+      <div class="bar-val">${(c.listeners / 1000).toFixed(0)}K</div>
+    </div>`
+  ).join('');
+
+  // --- Streaming Trends Chart ---
+  try {
+    const csvResp = await fetch('/spotify-twofeet-timeline.csv');
+    const csvText = await csvResp.text();
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+    const rows = lines.slice(1).map(l => {
+      const vals = l.split(',');
+      const obj = {};
+      headers.forEach((h, i) => obj[h.trim()] = vals[i]);
+      return obj;
+    });
+
+    const metrics = [
+      { key: 'streams', label: 'Streams', color: '#1DB954' },
+      { key: 'monthly listeners', label: 'Monthly Listeners', color: '#818cf8' },
+      { key: 'super listeners', label: 'Super Listeners', color: '#f472b6' },
+      { key: 'followers', label: 'Followers', color: '#60a5fa' },
+      { key: 'saves', label: 'Saves', color: '#facc15' },
+    ];
+
+    let activeMetric = 'streams';
+
+    // Metric picker
+    const pickerEl = document.getElementById('trend-metric-picker');
+    pickerEl.innerHTML = metrics.map(m =>
+      `<div class="trend-metric-btn" data-key="${m.key}" style="padding:5px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid ${m.key === activeMetric ? m.color : 'var(--border)'};color:${m.key === activeMetric ? m.color : 'var(--text2)'};background:${m.key === activeMetric ? m.color + '22' : 'transparent'}">${m.label}</div>`
+    ).join('');
+
+    function renderTrendChart(metricKey) {
+      activeMetric = metricKey;
+      const metric = metrics.find(m => m.key === metricKey);
+      const canvas = document.getElementById('trend-chart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = 180 * dpr;
+      ctx.scale(dpr, dpr);
+      const w = canvas.offsetWidth, h = 180;
+
+      const values = rows.map(r => parseInt(r[metricKey]) || 0);
+      const maxV = Math.max(...values);
+      const minV = Math.min(...values);
+      const range = maxV - minV || 1;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw line
+      ctx.beginPath();
+      ctx.strokeStyle = metric.color;
+      ctx.lineWidth = 1.5;
+      values.forEach((v, i) => {
+        const x = (i / (values.length - 1)) * w;
+        const y = h - 10 - ((v - minV) / range) * (h - 20);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Fill
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fillStyle = metric.color + '15';
+      ctx.fill();
+
+      // Labels
+      document.getElementById('trend-start').textContent = rows[0].date;
+      document.getElementById('trend-end').textContent = rows[rows.length - 1].date;
+
+      // Stats
+      const latest = values[values.length - 1];
+      const prev30 = values[Math.max(0, values.length - 31)];
+      const change = ((latest - prev30) / prev30 * 100).toFixed(1);
+      document.getElementById('trend-stats').innerHTML = `
+        <div style="font-size:12px"><span style="color:var(--text2)">Current:</span> <span style="font-weight:700;color:${metric.color}">${latest.toLocaleString()}</span></div>
+        <div style="font-size:12px"><span style="color:var(--text2)">30d change:</span> <span style="font-weight:700;color:${parseFloat(change) >= 0 ? '#4ade80' : '#f87171'}">${change > 0 ? '+' : ''}${change}%</span></div>
+        <div style="font-size:12px"><span style="color:var(--text2)">Peak:</span> <span style="font-weight:700">${maxV.toLocaleString()}</span></div>
+      `;
+
+      // Update picker styles
+      pickerEl.querySelectorAll('.trend-metric-btn').forEach(btn => {
+        const m2 = metrics.find(m => m.key === btn.dataset.key);
+        const isActive = btn.dataset.key === metricKey;
+        btn.style.borderColor = isActive ? m2.color : 'var(--border)';
+        btn.style.color = isActive ? m2.color : 'var(--text2)';
+        btn.style.background = isActive ? m2.color + '22' : 'transparent';
+      });
+    }
+
+    pickerEl.querySelectorAll('.trend-metric-btn').forEach(btn => {
+      btn.addEventListener('click', () => renderTrendChart(btn.dataset.key));
+    });
+
+    renderTrendChart('streams');
+  } catch (e) {
+    console.error('Trend chart error:', e);
   }
 }
 
