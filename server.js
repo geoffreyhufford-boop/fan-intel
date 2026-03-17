@@ -724,6 +724,7 @@ app.get('/api/insights/crossover', requireAuth, async (req, res) => {
 
 // Insights for a specific artist
 app.get('/api/insights', requireAuth, async (req, res) => {
+  try {
   const artistId = req.query.artist_id;
   if (!artistId) return res.status(400).json({ error: 'artist_id required' });
 
@@ -741,36 +742,34 @@ app.get('/api/insights', requireAuth, async (req, res) => {
     GROUP BY platform ORDER BY count DESC
   `, [artistId]);
 
-  // Behavior breakdown (what % of fans do each thing)
+  // Behavior breakdown — per-fan aggregation then count
   const behaviors = await pool.query(`
     SELECT
-      COUNT(DISTINCT f.id) as total_fans,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.bought_merch) THEN f.id END) as merch_buyers,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.attended_show) THEN f.id END) as show_attendees,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.creates_content) THEN f.id END) as content_creators,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.shared_reposted) THEN f.id END) as sharers,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.frequent_dms) THEN f.id END) as dms,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.runs_fan_page) THEN f.id END) as fan_pages,
-      COUNT(DISTINCT CASE WHEN BOOL_OR(s.commented_repeatedly) THEN f.id END) as commenters,
-      COUNT(DISTINCT CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN f.id END) as multi_show
+      BOOL_OR(s.bought_merch) as bought_merch,
+      BOOL_OR(s.attended_show) as attended_show,
+      BOOL_OR(s.creates_content) as creates_content,
+      BOOL_OR(s.shared_reposted) as shared_reposted,
+      BOOL_OR(s.frequent_dms) as frequent_dms,
+      BOOL_OR(s.runs_fan_page) as runs_fan_page,
+      BOOL_OR(s.commented_repeatedly) as commented_repeatedly,
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN true ELSE false END as multi_show
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
     WHERE f.artist_id = $1
     GROUP BY f.id
   `, [artistId]);
 
-  // Aggregate behavior counts from per-fan rows
   const beh = { total_fans: 0, merch_buyers: 0, show_attendees: 0, content_creators: 0, sharers: 0, dms: 0, fan_pages: 0, commenters: 0, multi_show: 0 };
   for (const row of behaviors.rows) {
     beh.total_fans++;
-    if (parseInt(row.merch_buyers)) beh.merch_buyers++;
-    if (parseInt(row.show_attendees)) beh.show_attendees++;
-    if (parseInt(row.content_creators)) beh.content_creators++;
-    if (parseInt(row.sharers)) beh.sharers++;
-    if (parseInt(row.dms)) beh.dms++;
-    if (parseInt(row.fan_pages)) beh.fan_pages++;
-    if (parseInt(row.commenters)) beh.commenters++;
-    if (parseInt(row.multi_show)) beh.multi_show++;
+    if (row.bought_merch) beh.merch_buyers++;
+    if (row.attended_show) beh.show_attendees++;
+    if (row.creates_content) beh.content_creators++;
+    if (row.shared_reposted) beh.sharers++;
+    if (row.frequent_dms) beh.dms++;
+    if (row.runs_fan_page) beh.fan_pages++;
+    if (row.commented_repeatedly) beh.commenters++;
+    if (row.multi_show) beh.multi_show++;
   }
 
   // Score distribution (buckets)
@@ -831,6 +830,10 @@ app.get('/api/insights', requireAuth, async (req, res) => {
     score_tiers: scoreDist.rows,
     top_amplifiers: amplifiers.rows
   });
+  } catch (err) {
+    console.error('Insights error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ---------- START ----------

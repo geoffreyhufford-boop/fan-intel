@@ -789,10 +789,21 @@
     <div class="screen-title">Insights</div>
     <div class="screen-sub" id="insights-sub">Fan intelligence breakdown</div>
 
-    <!-- Score Tiers -->
-    <div style="margin-bottom:20px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Fan Tiers</div>
-      <div class="tier-grid" id="tier-grid"></div>
+    <!-- Score Tiers with donut -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Fan Tiers</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="flex-shrink:0">
+          <svg id="tier-donut" width="120" height="120" viewBox="0 0 120 120"></svg>
+        </div>
+        <div id="tier-legend" style="flex:1"></div>
+      </div>
+    </div>
+
+    <!-- Fan Funnel -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Engagement Funnel</div>
+      <div id="funnel-chart"></div>
     </div>
 
     <!-- Behavior Breakdown -->
@@ -1495,15 +1506,60 @@ async function loadInsights() {
 
   document.getElementById('insights-sub').textContent = `${currentArtist.name} — fan intelligence breakdown`;
 
-  // Score tiers
+  // Score tiers — donut chart
   const tierMap = { casual: 0, engaged: 0, super: 0, evangelist: 0 };
   for (const t of insights.score_tiers) tierMap[t.tier] = parseInt(t.count);
-  document.getElementById('tier-grid').innerHTML = `
-    <div class="tier-box tier-casual"><div class="tier-count">${tierMap.casual}</div><div class="tier-label">Casual (0-10)</div></div>
-    <div class="tier-box tier-engaged"><div class="tier-count">${tierMap.engaged}</div><div class="tier-label">Engaged (11-20)</div></div>
-    <div class="tier-box tier-super"><div class="tier-count">${tierMap.super}</div><div class="tier-label">Super (21-30)</div></div>
-    <div class="tier-box tier-evangelist"><div class="tier-count">${tierMap.evangelist}</div><div class="tier-label">Evangelist (31+)</div></div>
-  `;
+  const tierTotal = Object.values(tierMap).reduce((a, b) => a + b, 0) || 1;
+  const tierColors = { casual: '#666', engaged: '#60a5fa', super: currentArtist.color || '#ff6b35', evangelist: '#4ade80' };
+  const tierLabels = { casual: 'Casual (0-10)', engaged: 'Engaged (11-20)', super: 'Super (21-30)', evangelist: 'Evangelist (31+)' };
+
+  // SVG donut
+  const cx = 60, cy = 60, r = 45, stroke = 16;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  let donutPaths = '';
+  for (const [tier, count] of Object.entries(tierMap)) {
+    if (count === 0) continue;
+    const pct = count / tierTotal;
+    const dashLen = pct * circ;
+    donutPaths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${tierColors[tier]}" stroke-width="${stroke}" stroke-dasharray="${dashLen} ${circ - dashLen}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})" />`;
+    offset += dashLen;
+  }
+  donutPaths += `<text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="#e8e8e8" font-size="22" font-weight="700">${tierTotal}</text>`;
+  donutPaths += `<text x="${cx}" y="${cy + 12}" text-anchor="middle" fill="#888" font-size="10">FANS</text>`;
+  document.getElementById('tier-donut').innerHTML = donutPaths;
+
+  // Legend
+  document.getElementById('tier-legend').innerHTML = Object.entries(tierMap).map(([tier, count]) =>
+    `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:10px;height:10px;border-radius:3px;background:${tierColors[tier]};flex-shrink:0"></div>
+      <div style="font-size:13px;flex:1">${tierLabels[tier]}</div>
+      <div style="font-size:14px;font-weight:700;color:${tierColors[tier]}">${count}</div>
+    </div>`
+  ).join('');
+
+  // Engagement funnel
+  const funnelSteps = [
+    { label: 'Total Fans', val: beh.total_fans, color: '#666' },
+    { label: 'Attended Show', val: beh.show_attendees, color: '#60a5fa' },
+    { label: 'Shares/Reposts', val: beh.sharers, color: '#818cf8' },
+    { label: 'Creates Content', val: beh.content_creators, color: currentArtist.color || '#ff6b35' },
+    { label: 'Bought Merch', val: beh.merch_buyers, color: '#f472b6' },
+    { label: 'Multiple Shows', val: beh.multi_show, color: '#4ade80' },
+  ];
+  const funnelMax = funnelSteps[0].val || 1;
+  document.getElementById('funnel-chart').innerHTML = funnelSteps.map(s => {
+    const pct = s.val / funnelMax * 100;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="width:110px;font-size:12px;color:var(--text2);text-align:right;flex-shrink:0">${s.label}</div>
+      <div style="flex:1;display:flex;justify-content:center">
+        <div style="height:28px;background:${s.color}22;border:1px solid ${s.color}44;border-radius:6px;width:${Math.max(pct, 8)}%;display:flex;align-items:center;justify-content:center;transition:width 0.4s">
+          <span style="font-size:13px;font-weight:700;color:${s.color}">${s.val}</span>
+        </div>
+      </div>
+      <div style="width:36px;font-size:12px;color:var(--text2);text-align:right">${Math.round(s.val / funnelMax * 100)}%</div>
+    </div>`;
+  }).join('');
 
   // Behavior breakdown
   const beh = insights.behaviors;
