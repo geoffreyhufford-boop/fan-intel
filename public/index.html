@@ -6,6 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Fan Intel</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -812,6 +814,12 @@
       <div class="beh-grid" id="beh-grid"></div>
     </div>
 
+    <!-- Fan Map -->
+    <div class="card" style="margin-bottom:16px;padding:16px 16px 8px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Fan Map</div>
+      <div id="fan-map" style="width:100%;border-radius:10px;overflow:hidden"></div>
+    </div>
+
     <!-- City Breakdown -->
     <div class="card" style="margin-bottom:16px">
       <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Cities</div>
@@ -1539,6 +1547,10 @@ async function loadInsights() {
     </div>`
   ).join('');
 
+  // Behavior data
+  const beh = insights.behaviors;
+  const total = beh.total_fans || 1;
+
   // Engagement funnel
   const funnelSteps = [
     { label: 'Total Fans', val: beh.total_fans, color: '#666' },
@@ -1563,8 +1575,6 @@ async function loadInsights() {
   }).join('');
 
   // Behavior breakdown
-  const beh = insights.behaviors;
-  const total = beh.total_fans || 1;
   const behItems = [
     { label: 'Attended show', val: beh.show_attendees },
     { label: 'Bought merch', val: beh.merch_buyers },
@@ -1578,6 +1588,67 @@ async function loadInsights() {
   document.getElementById('beh-grid').innerHTML = behItems.map(b =>
     `<div class="beh-item"><span class="beh-pct">${Math.round(b.val / total * 100)}%</span>${b.label}</div>`
   ).join('');
+
+  // Fan map (Leaflet)
+  const cityCoords = {
+    'denver': [39.74, -104.99], 'denver / nyc': [39.74, -104.99], 'co': [39.55, -105.78],
+    'colorado': [39.55, -105.78], 'la': [34.05, -118.24], 'los angeles': [34.05, -118.24],
+    'nyc': [40.71, -74.01], 'new york': [40.71, -74.01], 'portland': [45.52, -122.68],
+    'seattle': [47.61, -122.33], 'austin, tx': [30.27, -97.74], 'austin': [30.27, -97.74],
+    'salt lake city': [40.76, -111.89], 'sacramento': [38.58, -121.49],
+    'madison, wi': [43.07, -89.40], 'madison': [43.07, -89.40],
+    'ct': [41.60, -72.70], 'san francisco': [37.77, -122.42],
+    'pnw': [46.60, -122.33], 'chicago': [41.88, -87.63],
+    'omaha': [41.26, -95.94], 'cleveland': [41.50, -81.69],
+    'san luis obispo': [35.28, -120.66], 'cincinnati': [39.10, -84.51],
+    'montana': [46.88, -110.36], 'ohio': [40.42, -82.91],
+    'iowa': [41.88, -93.10], 'iowa / los angeles': [41.88, -93.10],
+    'london, uk': [51.51, -0.13], 'boston': [42.36, -71.06],
+  };
+
+  const mapEl = document.getElementById('fan-map');
+  mapEl.style.height = '280px';
+  // Destroy previous map if switching artists
+  if (window._fanMap) { window._fanMap.remove(); window._fanMap = null; }
+
+  const map = L.map(mapEl, { zoomControl: false, attributionControl: false }).setView([39, -98], 4);
+  window._fanMap = map;
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  const accentColor = currentArtist.color || '#ff6b35';
+  const maxFans = Math.max(...insights.cities.map(c => parseInt(c.count)), 1);
+  const bounds = [];
+  const plotted = new Set();
+
+  for (const c of insights.cities) {
+    const key = c.city.toLowerCase();
+    const coords = cityCoords[key];
+    if (!coords || plotted.has(key)) continue;
+    plotted.add(key);
+    const count = parseInt(c.count);
+    const radius = Math.max(6, Math.min(25, 6 + (count / maxFans) * 19));
+
+    L.circleMarker(coords, {
+      radius: radius,
+      fillColor: accentColor,
+      color: accentColor,
+      weight: 1,
+      opacity: 0.9,
+      fillOpacity: 0.35
+    }).addTo(map).bindPopup(`<b>${c.city}</b><br>${count} fan${count > 1 ? 's' : ''}`);
+
+    bounds.push(coords);
+  }
+
+  if (bounds.length > 1) {
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 6 });
+  } else if (bounds.length === 1) {
+    map.setView(bounds[0], 5);
+  }
+  // Fix map rendering after tab switch
+  setTimeout(() => map.invalidateSize(), 200);
 
   // City bars
   const maxCity = Math.max(...insights.cities.map(c => parseInt(c.count)), 1);
