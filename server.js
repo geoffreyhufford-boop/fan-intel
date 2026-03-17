@@ -248,6 +248,101 @@ app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
   }
 });
 
+// ---------- RESEED BROTHEL SIGHTINGS (varied scores) ----------
+
+app.post('/api/reseed-brothel', requireAuth, async (req, res) => {
+  try {
+    const brothelResult = await pool.query(`SELECT id FROM artists WHERE slug = 'brothel'`);
+    if (brothelResult.rows.length === 0) return res.status(400).json({ error: 'Brothel artist not found' });
+    const artistId = brothelResult.rows[0].id;
+
+    // Get the screenshot import show
+    const showResult = await pool.query("SELECT id FROM shows WHERE venue = 'Screenshot Import' AND artist_id = $1", [artistId]);
+    if (showResult.rows.length === 0) return res.status(400).json({ error: 'No import show found' });
+    const showId = showResult.rows[0].id;
+
+    // Delete ALL sightings for Brothel fans
+    await pool.query(`DELETE FROM sightings WHERE fan_id IN (SELECT id FROM fans WHERE artist_id = $1)`, [artistId]);
+
+    // Get all Brothel fans
+    const { rows: fans } = await pool.query('SELECT id FROM fans WHERE artist_id = $1 ORDER BY id', [artistId]);
+
+    // Behavior point values:
+    // shared_reposted=5, bought_merch=8, attended_show=6, attended_multiple=10,
+    // runs_fan_page=7, creates_content=7, frequent_dms=4, commented_repeatedly=0 (not in score)
+    // Target range: 6 to 40
+
+    const behaviorSets = [
+      // score ~6: just attended_show(6)
+      { attended_show: true },
+      // score ~9: shared_reposted(5) + frequent_dms(4)
+      { shared_reposted: true, frequent_dms: true },
+      // score ~10: attended_show(6) + frequent_dms(4)
+      { attended_show: true, frequent_dms: true },
+      // score ~11: attended_show(6) + shared_reposted(5)
+      { attended_show: true, shared_reposted: true },
+      // score ~13: creates_content(7) + attended_show(6)
+      { creates_content: true, attended_show: true },
+      // score ~14: bought_merch(8) + attended_show(6)
+      { bought_merch: true, attended_show: true },
+      // score ~16: attended_show(6) + shared_reposted(5) + frequent_dms(4) + commented
+      { attended_show: true, shared_reposted: true, frequent_dms: true, commented_repeatedly: true },
+      // score ~18: creates_content(7) + attended_show(6) + shared_reposted(5)
+      { creates_content: true, attended_show: true, shared_reposted: true },
+      // score ~19: bought_merch(8) + attended_show(6) + shared_reposted(5)
+      { bought_merch: true, attended_show: true, shared_reposted: true },
+      // score ~21: creates_content(7) + bought_merch(8) + attended_show(6)
+      { creates_content: true, bought_merch: true, attended_show: true },
+      // score ~24: creates_content(7) + attended_show(6) + shared_reposted(5) + frequent_dms(4) + commented
+      { creates_content: true, attended_show: true, shared_reposted: true, frequent_dms: true, commented_repeatedly: true },
+      // score ~25: creates_content(7) + bought_merch(8) + attended_show(6) + frequent_dms(4)
+      { creates_content: true, bought_merch: true, attended_show: true, frequent_dms: true },
+      // score ~30: creates_content(7) + bought_merch(8) + attended_show(6) + shared_reposted(5) + frequent_dms(4)
+      { creates_content: true, bought_merch: true, attended_show: true, shared_reposted: true, frequent_dms: true },
+      // score ~33: creates_content(7) + runs_fan_page(7) + bought_merch(8) + attended_show(6) + shared_reposted(5)
+      { creates_content: true, runs_fan_page: true, bought_merch: true, attended_show: true, shared_reposted: true },
+      // score ~37: all minus attended_multiple
+      { creates_content: true, runs_fan_page: true, bought_merch: true, attended_show: true, shared_reposted: true, frequent_dms: true },
+      // score ~40: big combo with multiple shows
+      { creates_content: true, bought_merch: true, attended_show: true, attended_multiple: true, shared_reposted: true, frequent_dms: true },
+    ];
+
+    // Distribute: more fans at low scores, fewer at high (pyramid)
+    // weights: heavier at the bottom
+    const weights = [5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1];
+    const pool2 = [];
+    for (let i = 0; i < weights.length; i++) {
+      for (let j = 0; j < weights[i]; j++) pool2.push(behaviorSets[i]);
+    }
+
+    let count = 0;
+    for (const fan of fans) {
+      const behaviors = pool2[count % pool2.length];
+      await pool.query(
+        \`INSERT INTO sightings (fan_id, show_id, entered_by,
+          commented_repeatedly, shared_reposted, bought_merch,
+          attended_show, attended_multiple, runs_fan_page,
+          creates_content, frequent_dms)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)\`,
+        [fan.id, showId, 'score-seed',
+         behaviors.commented_repeatedly || false,
+         behaviors.shared_reposted || false,
+         behaviors.bought_merch || false,
+         behaviors.attended_show || false,
+         behaviors.attended_multiple || false,
+         behaviors.runs_fan_page || false,
+         behaviors.creates_content || false,
+         behaviors.frequent_dms || false]
+      );
+      count++;
+    }
+
+    res.json({ success: true, reseeded: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------- IMPORT BROTHEL FANS ----------
 
 app.post('/api/import-brothel-fans', requireAuth, async (req, res) => {
