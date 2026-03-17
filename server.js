@@ -705,6 +705,134 @@ app.get('/api/fans/:id/sightings', requireAuth, async (req, res) => {
   res.json(rows);
 });
 
+// ---------- INSIGHTS ----------
+
+// Crossover fans (appear in multiple artist profiles)
+app.get('/api/insights/crossover', requireAuth, async (req, res) => {
+  const { rows } = await pool.query(`
+    SELECT f.handle, f.platform, array_agg(DISTINCT a.name) AS artists,
+           array_agg(DISTINCT a.id) AS artist_ids,
+           COUNT(DISTINCT f.artist_id) AS artist_count
+    FROM fans f
+    JOIN artists a ON a.id = f.artist_id
+    GROUP BY f.handle, f.platform
+    HAVING COUNT(DISTINCT f.artist_id) > 1
+    ORDER BY artist_count DESC, f.handle
+  `);
+  res.json(rows);
+});
+
+// Insights for a specific artist
+app.get('/api/insights', requireAuth, async (req, res) => {
+  const artistId = req.query.artist_id;
+  if (!artistId) return res.status(400).json({ error: 'artist_id required' });
+
+  // City breakdown
+  const cities = await pool.query(`
+    SELECT city, COUNT(*) as count FROM fans
+    WHERE artist_id = $1 AND city IS NOT NULL AND LOWER(city) != 'unknown'
+    GROUP BY city ORDER BY count DESC LIMIT 15
+  `, [artistId]);
+
+  // Platform breakdown
+  const platforms = await pool.query(`
+    SELECT platform, COUNT(*) as count FROM fans
+    WHERE artist_id = $1
+    GROUP BY platform ORDER BY count DESC
+  `, [artistId]);
+
+  // Behavior breakdown (what % of fans do each thing)
+  const behaviors = await pool.query(`
+    SELECT
+      COUNT(DISTINCT f.id) as total_fans,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.bought_merch) THEN f.id END) as merch_buyers,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.attended_show) THEN f.id END) as show_attendees,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.creates_content) THEN f.id END) as content_creators,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.shared_reposted) THEN f.id END) as sharers,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.frequent_dms) THEN f.id END) as dms,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.runs_fan_page) THEN f.id END) as fan_pages,
+      COUNT(DISTINCT CASE WHEN BOOL_OR(s.commented_repeatedly) THEN f.id END) as commenters,
+      COUNT(DISTINCT CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN f.id END) as multi_show
+    FROM fans f
+    LEFT JOIN sightings s ON s.fan_id = f.id
+    WHERE f.artist_id = $1
+    GROUP BY f.id
+  `, [artistId]);
+
+  // Aggregate behavior counts from per-fan rows
+  const beh = { total_fans: 0, merch_buyers: 0, show_attendees: 0, content_creators: 0, sharers: 0, dms: 0, fan_pages: 0, commenters: 0, multi_show: 0 };
+  for (const row of behaviors.rows) {
+    beh.total_fans++;
+    if (parseInt(row.merch_buyers)) beh.merch_buyers++;
+    if (parseInt(row.show_attendees)) beh.show_attendees++;
+    if (parseInt(row.content_creators)) beh.content_creators++;
+    if (parseInt(row.sharers)) beh.sharers++;
+    if (parseInt(row.dms)) beh.dms++;
+    if (parseInt(row.fan_pages)) beh.fan_pages++;
+    if (parseInt(row.commenters)) beh.commenters++;
+    if (parseInt(row.multi_show)) beh.multi_show++;
+  }
+
+  // Score distribution (buckets)
+  const scoreDist = await pool.query(`
+    SELECT
+      CASE
+        WHEN score <= 10 THEN 'casual'
+        WHEN score <= 20 THEN 'engaged'
+        WHEN score <= 30 THEN 'super'
+        ELSE 'evangelist'
+      END AS tier,
+      COUNT(*) as count
+    FROM (
+      SELECT f.id,
+        CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
+        CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
+        CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
+        CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
+        CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
+        CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
+        CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
+        GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS score
+      FROM fans f
+      LEFT JOIN sightings s ON s.fan_id = f.id
+      WHERE f.artist_id = $1
+      GROUP BY f.id
+    ) scored
+    GROUP BY tier
+    ORDER BY CASE tier WHEN 'casual' THEN 1 WHEN 'engaged' THEN 2 WHEN 'super' THEN 3 ELSE 4 END
+  `, [artistId]);
+
+  // Top amplifiers (content creators + sharers with highest scores)
+  const amplifiers = await pool.query(`
+    SELECT f.id, f.handle, f.platform, f.real_name, f.city, f.notes,
+      CASE WHEN BOOL_OR(s.shared_reposted) THEN 5 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.bought_merch) THEN 8 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.attended_show) THEN 6 ELSE 0 END +
+      CASE WHEN COUNT(DISTINCT s.show_id) > 1 OR BOOL_OR(s.attended_multiple) THEN 10 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.runs_fan_page) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.creates_content) THEN 7 ELSE 0 END +
+      CASE WHEN BOOL_OR(s.frequent_dms) THEN 4 ELSE 0 END +
+      GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS score
+    FROM fans f
+    LEFT JOIN sightings s ON s.fan_id = f.id
+    WHERE f.artist_id = $1 AND (
+      EXISTS (SELECT 1 FROM sightings s2 WHERE s2.fan_id = f.id AND s2.creates_content = true)
+      OR EXISTS (SELECT 1 FROM sightings s2 WHERE s2.fan_id = f.id AND s2.shared_reposted = true)
+    )
+    GROUP BY f.id
+    ORDER BY score DESC
+    LIMIT 10
+  `, [artistId]);
+
+  res.json({
+    cities: cities.rows,
+    platforms: platforms.rows,
+    behaviors: beh,
+    score_tiers: scoreDist.rows,
+    top_amplifiers: amplifiers.rows
+  });
+});
+
 // ---------- START ----------
 
 initDB().then(() => {

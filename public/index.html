@@ -54,6 +54,120 @@
     }
     #pin-error { color: var(--red); font-size: 14px; display: none; }
 
+    /* INSIGHT BARS */
+    .bar-chart { margin-bottom: 16px; }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .bar-label {
+      font-size: 13px;
+      width: 100px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .bar-track {
+      flex: 1;
+      height: 24px;
+      background: var(--surface2);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 6px;
+      transition: width 0.4s ease;
+      min-width: 2px;
+    }
+    .bar-val {
+      font-size: 12px;
+      color: var(--text2);
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* TIER BADGES */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .tier-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .tier-box .tier-count { font-size: 28px; font-weight: 700; }
+    .tier-box .tier-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .tier-casual .tier-count { color: var(--text2); }
+    .tier-engaged .tier-count { color: var(--blue); }
+    .tier-super .tier-count { color: var(--accent); }
+    .tier-evangelist .tier-count { color: var(--green); }
+
+    /* BEHAVIOR GRID */
+    .beh-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .beh-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .beh-pct {
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 38px;
+    }
+
+    /* CROSSOVER */
+    .crossover-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      gap: 10px;
+    }
+    .crossover-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .crossover-handle { font-weight: 600; font-size: 15px; }
+    .crossover-artists { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .crossover-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    /* AMPLIFIER ROW */
+    .amp-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      gap: 10px;
+    }
+    .amp-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .amp-info { flex: 1; min-width: 0; }
+    .amp-handle { font-weight: 600; font-size: 14px; }
+    .amp-meta { font-size: 12px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
     /* ARTIST SWITCHER */
     .artist-bar {
       display: flex;
@@ -670,10 +784,55 @@
     <div class="card" id="show-list" style="padding:0;overflow:hidden"></div>
   </div>
 
+  <!-- SCREEN: INSIGHTS -->
+  <div class="screen" id="screen-insights">
+    <div class="screen-title">Insights</div>
+    <div class="screen-sub" id="insights-sub">Fan intelligence breakdown</div>
+
+    <!-- Score Tiers -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Fan Tiers</div>
+      <div class="tier-grid" id="tier-grid"></div>
+    </div>
+
+    <!-- Behavior Breakdown -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Behavior Breakdown</div>
+      <div class="beh-grid" id="beh-grid"></div>
+    </div>
+
+    <!-- City Breakdown -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Cities</div>
+      <div class="bar-chart" id="city-bars"></div>
+    </div>
+
+    <!-- Platform Breakdown -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Platforms</div>
+      <div class="bar-chart" id="platform-bars"></div>
+    </div>
+
+    <!-- Top Amplifiers -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Amplifiers</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who create content & share — your organic marketing engine</div>
+      <div id="amplifier-list" style="margin:0 -16px"></div>
+    </div>
+
+    <!-- Crossover Fans -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Crossover Fans</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who follow multiple artists — shared audience signals</div>
+      <div id="crossover-list" style="margin:0 -16px"></div>
+    </div>
+  </div>
+
   <!-- NAV -->
   <div class="nav">
     <button class="active" data-screen="screen-add"><span class="icon">+</span>Add</button>
     <button data-screen="screen-dashboard"><span class="icon">◆</span>Fans</button>
+    <button data-screen="screen-insights"><span class="icon">◇</span>Insights</button>
     <button data-screen="screen-shows"><span class="icon">●</span>Tour</button>
   </div>
 </div>
@@ -960,6 +1119,7 @@ function setupNav() {
       btn.classList.add('active');
       document.getElementById(btn.dataset.screen).classList.add('active');
       if (btn.dataset.screen === 'screen-dashboard') loadDashboard();
+      if (btn.dataset.screen === 'screen-insights') loadInsights();
     });
   });
 }
@@ -1321,6 +1481,100 @@ async function openFanModal(fanId, fans) {
   }
 
   document.getElementById('fan-modal').classList.add('show');
+}
+
+// ----- INSIGHTS -----
+async function loadInsights() {
+  if (!currentArtist) return;
+  const artistParam = `?artist_id=${currentArtist.id}`;
+
+  const [insights, crossover] = await Promise.all([
+    api('/api/insights' + artistParam),
+    api('/api/insights/crossover')
+  ]);
+
+  document.getElementById('insights-sub').textContent = `${currentArtist.name} — fan intelligence breakdown`;
+
+  // Score tiers
+  const tierMap = { casual: 0, engaged: 0, super: 0, evangelist: 0 };
+  for (const t of insights.score_tiers) tierMap[t.tier] = parseInt(t.count);
+  document.getElementById('tier-grid').innerHTML = `
+    <div class="tier-box tier-casual"><div class="tier-count">${tierMap.casual}</div><div class="tier-label">Casual (0-10)</div></div>
+    <div class="tier-box tier-engaged"><div class="tier-count">${tierMap.engaged}</div><div class="tier-label">Engaged (11-20)</div></div>
+    <div class="tier-box tier-super"><div class="tier-count">${tierMap.super}</div><div class="tier-label">Super (21-30)</div></div>
+    <div class="tier-box tier-evangelist"><div class="tier-count">${tierMap.evangelist}</div><div class="tier-label">Evangelist (31+)</div></div>
+  `;
+
+  // Behavior breakdown
+  const beh = insights.behaviors;
+  const total = beh.total_fans || 1;
+  const behItems = [
+    { label: 'Attended show', val: beh.show_attendees },
+    { label: 'Bought merch', val: beh.merch_buyers },
+    { label: 'Creates content', val: beh.content_creators },
+    { label: 'Shares/reposts', val: beh.sharers },
+    { label: 'Multiple shows', val: beh.multi_show },
+    { label: 'DMs/replies', val: beh.dms },
+    { label: 'Comments', val: beh.commenters },
+    { label: 'Fan page', val: beh.fan_pages },
+  ];
+  document.getElementById('beh-grid').innerHTML = behItems.map(b =>
+    `<div class="beh-item"><span class="beh-pct">${Math.round(b.val / total * 100)}%</span>${b.label}</div>`
+  ).join('');
+
+  // City bars
+  const maxCity = Math.max(...insights.cities.map(c => parseInt(c.count)), 1);
+  document.getElementById('city-bars').innerHTML = insights.cities.length === 0
+    ? '<div style="color:var(--text2);font-size:13px">No city data yet</div>'
+    : insights.cities.map(c =>
+      `<div class="bar-row">
+        <div class="bar-label">${c.city}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${parseInt(c.count) / maxCity * 100}%"></div></div>
+        <div class="bar-val">${c.count}</div>
+      </div>`
+    ).join('');
+
+  // Platform bars
+  const maxPlat = Math.max(...insights.platforms.map(p => parseInt(p.count)), 1);
+  document.getElementById('platform-bars').innerHTML = insights.platforms.map(p =>
+    `<div class="bar-row">
+      <div class="bar-label">${p.platform}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${parseInt(p.count) / maxPlat * 100}%"></div></div>
+      <div class="bar-val">${p.count}</div>
+    </div>`
+  ).join('');
+
+  // Top amplifiers
+  const ampList = document.getElementById('amplifier-list');
+  if (insights.top_amplifiers.length === 0) {
+    ampList.innerHTML = '<div style="padding:16px;color:var(--text2);font-size:13px">No amplifiers identified yet</div>';
+  } else {
+    ampList.innerHTML = insights.top_amplifiers.map(a =>
+      `<div class="amp-row">
+        <div class="fan-rank ${parseInt(a.score) >= 30 ? 'top3' : ''}" style="font-size:11px">${a.score}</div>
+        <div class="amp-info">
+          <div class="amp-handle">@${a.handle}</div>
+          <div class="amp-meta">${a.platform}${a.real_name ? ' · ' + a.real_name : ''}${a.city ? ' · ' + a.city : ''}${a.notes ? ' · ' + a.notes : ''}</div>
+        </div>
+      </div>`
+    ).join('');
+  }
+
+  // Crossover fans
+  const crossList = document.getElementById('crossover-list');
+  if (crossover.length === 0) {
+    crossList.innerHTML = '<div style="padding:16px;color:var(--text2);font-size:13px">No crossover fans found yet — add more artists to discover shared audiences</div>';
+  } else {
+    crossList.innerHTML = crossover.map(c =>
+      `<div class="crossover-row">
+        <div style="flex:1">
+          <div class="crossover-handle">@${c.handle}</div>
+          <div class="crossover-artists">${c.artists.join(' · ')} · ${c.platform}</div>
+        </div>
+        <div class="crossover-badge">${c.artist_count} artists</div>
+      </div>`
+    ).join('');
+  }
 }
 
 // Close modal
