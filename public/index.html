@@ -54,6 +54,61 @@
     }
     #pin-error { color: var(--red); font-size: 14px; display: none; }
 
+    /* ARTIST SWITCHER */
+    .artist-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      padding-top: calc(8px + env(safe-area-inset-top, 0));
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+    .artist-bar .label {
+      font-size: 11px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .artist-chips {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .artist-chip {
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .artist-chip.active {
+      background: rgba(255, 107, 53, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .artist-chip-add {
+      padding: 6px 10px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 20px;
+      color: var(--text2);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
     /* NAV */
     .nav {
       position: fixed;
@@ -410,6 +465,13 @@
 <!-- MAIN APP -->
 <div id="app" style="display:none">
 
+  <!-- ARTIST SWITCHER -->
+  <div class="artist-bar">
+    <span class="label">Artist</span>
+    <div class="artist-chips" id="artist-chips"></div>
+    <div class="artist-chip-add" id="btn-add-artist">+ New</div>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
@@ -565,7 +627,7 @@
       <div class="stat-box"><div class="stat-num" id="s-cities">0</div><div class="stat-label">Cities</div></div>
     </div>
 
-    <button class="btn btn-secondary" style="margin-bottom:12px" onclick="window.location.href='/api/export.csv?pin='+PIN">Export CSV</button>
+    <button class="btn btn-secondary" style="margin-bottom:12px" onclick="window.location.href='/api/export.csv?pin='+PIN+(currentArtist?'&artist_id='+currentArtist.id:'')">Export CSV</button>
 
     <!-- FILTERS -->
     <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px">
@@ -603,8 +665,8 @@
 
   <!-- SCREEN: SHOWS -->
   <div class="screen" id="screen-shows">
-    <div class="screen-title">Tour</div>
-    <div class="screen-sub">48 shows — Mar 4 to May 15</div>
+    <div class="screen-title" id="shows-title">Tour</div>
+    <div class="screen-sub" id="shows-sub"></div>
     <div class="card" id="show-list" style="padding:0;overflow:hidden"></div>
   </div>
 
@@ -613,6 +675,30 @@
     <button class="active" data-screen="screen-add"><span class="icon">+</span>Add</button>
     <button data-screen="screen-dashboard"><span class="icon">◆</span>Fans</button>
     <button data-screen="screen-shows"><span class="icon">●</span>Tour</button>
+  </div>
+</div>
+
+<!-- ADD ARTIST MODAL -->
+<div class="modal-overlay" id="add-artist-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Add Artist</h2>
+    <div class="form-group">
+      <label>Artist Name</label>
+      <input type="text" id="new-artist-name" placeholder="e.g. Brothel" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Accent Color</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="color-picker">
+        <div class="color-dot" data-color="#ff6b35" style="width:36px;height:36px;border-radius:50%;background:#ff6b35;border:2px solid transparent;cursor:pointer"></div>
+        <div class="color-dot" data-color="#a855f7" style="width:36px;height:36px;border-radius:50%;background:#a855f7;border:2px solid transparent;cursor:pointer"></div>
+        <div class="color-dot" data-color="#60a5fa" style="width:36px;height:36px;border-radius:50%;background:#60a5fa;border:2px solid transparent;cursor:pointer"></div>
+        <div class="color-dot" data-color="#4ade80" style="width:36px;height:36px;border-radius:50%;background:#4ade80;border:2px solid transparent;cursor:pointer"></div>
+        <div class="color-dot" data-color="#f472b6" style="width:36px;height:36px;border-radius:50%;background:#f472b6;border:2px solid transparent;cursor:pointer"></div>
+        <div class="color-dot" data-color="#facc15" style="width:36px;height:36px;border-radius:50%;background:#facc15;border:2px solid transparent;cursor:pointer"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-save-artist">Create Artist</button>
   </div>
 </div>
 
@@ -632,6 +718,8 @@ let PIN = '';
 let currentShow = null;
 let shows = [];
 let selectedReturningFan = null;
+let artists = [];
+let currentArtist = null;
 
 // ----- AUTH -----
 const pinInput = document.getElementById('pin-input');
@@ -682,6 +770,7 @@ async function api(url, opts = {}) {
 
 // ----- INIT -----
 async function init() {
+  await loadArtists();
   await loadShows();
   loadTonight();
   loadDashboard();
@@ -689,15 +778,101 @@ async function init() {
   setupForm();
   setupSearch();
   setupScreenshot();
+  setupArtistSwitcher();
   if (savedName) {
     document.getElementById('f-enteredby').value = savedName;
     document.getElementById('rf-enteredby').value = savedName;
   }
 }
 
+// ----- ARTISTS -----
+async function loadArtists() {
+  artists = await api('/api/artists');
+  const savedArtistId = localStorage.getItem('fi-artist');
+  if (savedArtistId && artists.find(a => a.id == savedArtistId)) {
+    currentArtist = artists.find(a => a.id == savedArtistId);
+  } else if (artists.length > 0) {
+    currentArtist = artists[0];
+  }
+  renderArtistChips();
+  applyArtistTheme();
+}
+
+function renderArtistChips() {
+  const container = document.getElementById('artist-chips');
+  container.innerHTML = artists.map(a =>
+    `<div class="artist-chip ${currentArtist && currentArtist.id === a.id ? 'active' : ''}" data-id="${a.id}" data-color="${a.color}">${a.name}</div>`
+  ).join('');
+
+  container.querySelectorAll('.artist-chip').forEach(chip => {
+    chip.addEventListener('click', () => switchArtist(parseInt(chip.dataset.id)));
+  });
+}
+
+function applyArtistTheme() {
+  if (currentArtist && currentArtist.color) {
+    document.documentElement.style.setProperty('--accent', currentArtist.color);
+    // Lighten for accent2
+    document.documentElement.style.setProperty('--accent2', currentArtist.color + 'cc');
+  }
+}
+
+async function switchArtist(artistId) {
+  currentArtist = artists.find(a => a.id === artistId);
+  localStorage.setItem('fi-artist', artistId);
+  renderArtistChips();
+  applyArtistTheme();
+  await loadShows();
+  loadTonight();
+  loadDashboard();
+}
+
+function setupArtistSwitcher() {
+  // Add artist button
+  document.getElementById('btn-add-artist').addEventListener('click', () => {
+    document.getElementById('add-artist-modal').classList.add('show');
+  });
+
+  document.getElementById('add-artist-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('add-artist-modal')) {
+      document.getElementById('add-artist-modal').classList.remove('show');
+    }
+  });
+
+  // Color picker
+  let selectedColor = '#ff6b35';
+  document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+      dot.style.borderColor = '#fff';
+      selectedColor = dot.dataset.color;
+    });
+  });
+
+  // Save artist
+  document.getElementById('btn-save-artist').addEventListener('click', async () => {
+    const name = document.getElementById('new-artist-name').value.trim();
+    if (!name) { toast('Enter artist name', true); return; }
+    try {
+      const artist = await api('/api/artists', {
+        method: 'POST',
+        body: JSON.stringify({ name, color: selectedColor })
+      });
+      artists.push(artist);
+      await switchArtist(artist.id);
+      document.getElementById('new-artist-name').value = '';
+      document.getElementById('add-artist-modal').classList.remove('show');
+      toast(`${name} added!`);
+    } catch (err) {
+      toast('Failed to add artist', true);
+    }
+  });
+}
+
 // ----- SHOWS -----
 async function loadShows() {
-  shows = await api('/api/shows');
+  const artistParam = currentArtist ? `?artist_id=${currentArtist.id}` : '';
+  shows = await api('/api/shows' + artistParam);
   const select = document.getElementById('f-show');
   const today = new Date().toISOString().split('T')[0];
   let closestIdx = 0;
@@ -714,8 +889,12 @@ async function loadShows() {
     if (diff < closestDiff) { closestDiff = diff; closestIdx = i; }
   });
 
-  select.selectedIndex = closestIdx;
-  currentShow = shows[closestIdx];
+  if (shows.length > 0) {
+    select.selectedIndex = closestIdx;
+    currentShow = shows[closestIdx];
+  } else {
+    currentShow = null;
+  }
 
   // Show list
   renderShowList();
@@ -724,6 +903,16 @@ async function loadShows() {
 function renderShowList() {
   const list = document.getElementById('show-list');
   const today = new Date().toISOString().split('T')[0];
+  // Update shows header
+  const showsSub = document.getElementById('shows-sub');
+  if (shows.length > 0) {
+    const first = new Date(shows[0].date);
+    const last = new Date(shows[shows.length - 1].date);
+    const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    showsSub.textContent = `${shows.length} shows — ${fmt(first)} to ${fmt(last)}`;
+  } else {
+    showsSub.textContent = 'No shows added yet';
+  }
   list.innerHTML = shows.map(s => {
     const d = new Date(s.date);
     const dateStr = s.date.split('T')[0] || s.date;
@@ -749,6 +938,9 @@ function loadTonight() {
     document.getElementById('tonight-city').textContent = currentShow.city;
     const d = new Date(currentShow.date);
     document.getElementById('tonight-sub').textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  } else {
+    document.getElementById('tonight-banner').style.display = 'none';
+    document.getElementById('tonight-sub').textContent = currentArtist ? `No shows scheduled for ${currentArtist.name}` : 'Select an artist';
   }
 }
 
@@ -868,6 +1060,7 @@ async function submitNewFan() {
       platform,
       real_name: document.getElementById('f-name').value.trim() || null,
       city: document.getElementById('f-city').value.trim() || null,
+      artist_id: currentArtist ? currentArtist.id : null,
     })
   });
 
@@ -953,7 +1146,8 @@ function setupSearch() {
     const q = input.value.trim();
     if (q.length < 2) { results.classList.remove('show'); return; }
     debounce = setTimeout(async () => {
-      const fans = await api(`/api/fans/search?q=${encodeURIComponent(q)}`);
+      const artistParam = currentArtist ? `&artist_id=${currentArtist.id}` : '';
+      const fans = await api(`/api/fans/search?q=${encodeURIComponent(q)}${artistParam}`);
       if (fans.length === 0) { results.classList.remove('show'); return; }
       results.innerHTML = fans.map(f =>
         `<div class="ac-item" data-id="${f.id}" data-handle="${f.handle}" data-platform="${f.platform}" data-name="${f.real_name || ''}">
@@ -1001,7 +1195,8 @@ function selectReturningFan(fan) {
 let allFans = [];
 
 async function loadDashboard() {
-  const [fans, stats] = await Promise.all([api('/api/dashboard'), api('/api/stats')]);
+  const artistParam = currentArtist ? `?artist_id=${currentArtist.id}` : '';
+  const [fans, stats] = await Promise.all([api('/api/dashboard' + artistParam), api('/api/stats' + artistParam)]);
   allFans = fans;
 
   document.getElementById('s-fans').textContent = stats.total_fans;

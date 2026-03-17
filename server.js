@@ -30,9 +30,21 @@ function requireAuth(req, res, next) {
 // ---------- DB INIT ----------
 
 async function initDB() {
+  // Create artists table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS artists (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      slug TEXT NOT NULL UNIQUE,
+      color TEXT DEFAULT '#ff6b35',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS shows (
       id SERIAL PRIMARY KEY,
+      artist_id INTEGER REFERENCES artists(id) ON DELETE CASCADE,
       date DATE NOT NULL,
       city TEXT NOT NULL,
       venue TEXT NOT NULL,
@@ -42,6 +54,7 @@ async function initDB() {
 
     CREATE TABLE IF NOT EXISTS fans (
       id SERIAL PRIMARY KEY,
+      artist_id INTEGER REFERENCES artists(id) ON DELETE CASCADE,
       handle TEXT NOT NULL,
       platform TEXT NOT NULL DEFAULT 'instagram',
       real_name TEXT,
@@ -49,7 +62,7 @@ async function initDB() {
       fan_type TEXT,
       notes TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(handle, platform)
+      UNIQUE(handle, platform, artist_id)
     );
 
     CREATE TABLE IF NOT EXISTS sightings (
@@ -71,6 +84,29 @@ async function initDB() {
     );
   `);
 
+  // Seed default artists if none exist
+  const { rows: artistRows } = await pool.query('SELECT COUNT(*) FROM artists');
+  if (parseInt(artistRows[0].count) === 0) {
+    await pool.query(`INSERT INTO artists (name, slug, color) VALUES ('Two Feet', 'two-feet', '#ff6b35')`);
+    await pool.query(`INSERT INTO artists (name, slug, color) VALUES ('Brothel', 'brothel', '#a855f7')`);
+  }
+
+  // Migrate: if shows exist without artist_id, assign them to Two Feet
+  try {
+    await pool.query(`ALTER TABLE shows ADD COLUMN IF NOT EXISTS artist_id INTEGER REFERENCES artists(id) ON DELETE CASCADE`);
+    await pool.query(`ALTER TABLE fans ADD COLUMN IF NOT EXISTS artist_id INTEGER REFERENCES artists(id) ON DELETE CASCADE`);
+    const tf = await pool.query(`SELECT id FROM artists WHERE slug = 'two-feet'`);
+    if (tf.rows.length > 0) {
+      await pool.query(`UPDATE shows SET artist_id = $1 WHERE artist_id IS NULL`, [tf.rows[0].id]);
+      await pool.query(`UPDATE fans SET artist_id = $1 WHERE artist_id IS NULL`, [tf.rows[0].id]);
+    }
+    // Update unique constraint on fans to include artist_id
+    await pool.query(`ALTER TABLE fans DROP CONSTRAINT IF EXISTS fans_handle_platform_key`);
+    await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS fans_handle_platform_artist ON fans(handle, platform, artist_id)`);
+  } catch (e) {
+    // Columns/constraints may already exist
+  }
+
   // Seed shows if empty
   const { rows } = await pool.query('SELECT COUNT(*) FROM shows');
   if (parseInt(rows[0].count) === 0) {
@@ -79,6 +115,8 @@ async function initDB() {
 }
 
 async function seedShows() {
+  const tf = await pool.query(`SELECT id FROM artists WHERE slug = 'two-feet'`);
+  const artistId = tf.rows[0]?.id;
   const shows = [
     ['2026-03-04', 'Santa Cruz, CA', 'The Catalyst', 1000],
     ['2026-03-05', 'San Luis Obispo, CA', 'Fremont Theater', 900],
@@ -132,8 +170,8 @@ async function seedShows() {
 
   for (const [date, city, venue, capacity] of shows) {
     await pool.query(
-      'INSERT INTO shows (date, city, venue, capacity) VALUES ($1, $2, $3, $4)',
-      [date, city, venue, capacity]
+      'INSERT INTO shows (artist_id, date, city, venue, capacity) VALUES ($1, $2, $3, $4, $5)',
+      [artistId, date, city, venue, capacity]
     );
   }
 }
@@ -141,6 +179,9 @@ async function seedShows() {
 // ---------- SEED FROM XLSX (accurate data) ----------
 
 app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
+  // Get Two Feet artist ID for seeding
+  const tfResult = await pool.query(`SELECT id FROM artists WHERE slug = 'two-feet'`);
+  const seedArtistId = tfResult.rows[0]?.id;
   const fans = [
     { handle: 'rachel_erin_80', platform: 'instagram', real_name: 'Rachel Erin', city: 'Chicago', fan_type: 'evangelist', commented_repeatedly: true, shared_reposted: true, bought_merch: true, attended_show: true, attended_multiple: true, runs_fan_page: false, creates_content: true, frequent_dms: true },
     { handle: 'carolcartwright19', platform: 'instagram', real_name: 'carol cartwright', city: 'unknown', fan_type: 'hyper', commented_repeatedly: true, shared_reposted: true, bought_merch: false, attended_show: true, attended_multiple: true, runs_fan_page: false, creates_content: false, frequent_dms: true },
@@ -183,14 +224,14 @@ app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
     let count = 0;
     for (const f of fans) {
       const fanRes = await pool.query(
-        `INSERT INTO fans (handle, platform, real_name, city, fan_type)
-         VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (handle, platform) DO UPDATE SET
+        `INSERT INTO fans (handle, platform, real_name, city, fan_type, artist_id)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (handle, platform, artist_id) DO UPDATE SET
            real_name = COALESCE(EXCLUDED.real_name, fans.real_name),
            city = COALESCE(EXCLUDED.city, fans.city),
            fan_type = COALESCE(EXCLUDED.fan_type, fans.fan_type)
          RETURNING id`,
-        [f.handle.toLowerCase().trim(), f.platform.trim(), f.real_name, f.city, f.fan_type]
+        [f.handle.toLowerCase().trim(), f.platform.trim(), f.real_name, f.city, f.fan_type, seedArtistId]
       );
 
       await pool.query(
@@ -202,6 +243,63 @@ app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
     }
 
     res.json({ success: true, imported: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- IMPORT BROTHEL FANS ----------
+
+app.post('/api/import-brothel-fans', requireAuth, async (req, res) => {
+  try {
+    const brothelResult = await pool.query(`SELECT id FROM artists WHERE slug = 'brothel'`);
+    if (brothelResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Brothel artist not found' });
+    }
+    const artistId = brothelResult.rows[0].id;
+
+    // Get or create a placeholder show for screenshot imports
+    let showId;
+    const existing = await pool.query("SELECT id FROM shows WHERE venue = 'Screenshot Import' AND artist_id = $1", [artistId]);
+    if (existing.rows.length > 0) {
+      showId = existing.rows[0].id;
+    } else {
+      const r = await pool.query("INSERT INTO shows (artist_id, date, city, venue, capacity) VALUES ($1, '2026-03-16', 'Pre-Tour', 'Screenshot Import', 0) RETURNING id", [artistId]);
+      showId = r.rows[0].id;
+    }
+
+    const fans = require('./brothel-fans-extracted.json');
+    let count = 0;
+
+    for (const f of fans) {
+      const fanRes = await pool.query(
+        `INSERT INTO fans (handle, platform, real_name, city, artist_id, notes)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (handle, platform, artist_id) DO UPDATE SET
+           real_name = COALESCE(EXCLUDED.real_name, fans.real_name),
+           city = COALESCE(EXCLUDED.city, fans.city),
+           notes = COALESCE(EXCLUDED.notes, fans.notes)
+         RETURNING id`,
+        [f.handle.toLowerCase().trim(), f.platform, f.real_name, f.city, artistId, f.context]
+      );
+
+      // Check if sighting already exists
+      const existingSighting = await pool.query(
+        'SELECT id FROM sightings WHERE fan_id = $1 AND show_id = $2',
+        [fanRes.rows[0].id, showId]
+      );
+
+      if (existingSighting.rows.length === 0) {
+        await pool.query(
+          `INSERT INTO sightings (fan_id, show_id, entered_by, shared_reposted, creates_content, notes)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [fanRes.rows[0].id, showId, 'screenshot-import', true, true, f.context]
+        );
+      }
+      count++;
+    }
+
+    res.json({ success: true, imported: count, artist: 'brothel' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -254,38 +352,89 @@ If you can't determine a field, use null. Only return the JSON object, nothing e
   }
 });
 
-// ---------- API ROUTES ----------
+// ---------- ARTIST ROUTES ----------
 
-// Get all shows
-app.get('/api/shows', requireAuth, async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM shows ORDER BY date');
+app.get('/api/artists', requireAuth, async (req, res) => {
+  const { rows } = await pool.query('SELECT * FROM artists ORDER BY name');
   res.json(rows);
 });
 
-// Get tonight's show (closest to today)
+app.post('/api/artists', requireAuth, async (req, res) => {
+  const { name, color } = req.body;
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO artists (name, slug, color) VALUES ($1, $2, $3) RETURNING *',
+      [name, slug, color || '#ff6b35']
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- ARTIST SHOWS ----------
+
+app.post('/api/artists/:artistId/shows', requireAuth, async (req, res) => {
+  const { date, city, venue, capacity, notes } = req.body;
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO shows (artist_id, date, city, venue, capacity, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [req.params.artistId, date, city, venue, capacity, notes]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- API ROUTES ----------
+
+// Get all shows (filtered by artist)
+app.get('/api/shows', requireAuth, async (req, res) => {
+  const artistId = req.query.artist_id;
+  if (!artistId) {
+    const { rows } = await pool.query('SELECT * FROM shows ORDER BY date');
+    return res.json(rows);
+  }
+  const { rows } = await pool.query('SELECT * FROM shows WHERE artist_id = $1 ORDER BY date', [artistId]);
+  res.json(rows);
+});
+
+// Get tonight's show (closest to today, filtered by artist)
 app.get('/api/shows/tonight', requireAuth, async (req, res) => {
-  const { rows } = await pool.query(`
-    SELECT * FROM shows
-    ORDER BY ABS(date - CURRENT_DATE)
-    LIMIT 1
-  `);
-  res.json(rows[0] || null);
+  const artistId = req.query.artist_id;
+  if (artistId) {
+    const { rows } = await pool.query(`
+      SELECT * FROM shows WHERE artist_id = $1
+      ORDER BY ABS(date - CURRENT_DATE)
+      LIMIT 1
+    `, [artistId]);
+    res.json(rows[0] || null);
+  } else {
+    const { rows } = await pool.query(`
+      SELECT * FROM shows
+      ORDER BY ABS(date - CURRENT_DATE)
+      LIMIT 1
+    `);
+    res.json(rows[0] || null);
+  }
 });
 
 // Add a fan
 app.post('/api/fans', requireAuth, async (req, res) => {
-  const { handle, platform, real_name, city, fan_type, notes } = req.body;
+  const { handle, platform, real_name, city, fan_type, notes, artist_id } = req.body;
   try {
     const { rows } = await pool.query(
-      `INSERT INTO fans (handle, platform, real_name, city, fan_type, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (handle, platform) DO UPDATE SET
+      `INSERT INTO fans (handle, platform, real_name, city, fan_type, notes, artist_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (handle, platform, artist_id) DO UPDATE SET
          real_name = COALESCE(EXCLUDED.real_name, fans.real_name),
          city = COALESCE(EXCLUDED.city, fans.city),
          fan_type = COALESCE(EXCLUDED.fan_type, fans.fan_type),
          notes = COALESCE(EXCLUDED.notes, fans.notes)
        RETURNING *`,
-      [handle.toLowerCase().trim(), platform, real_name, city, fan_type, notes]
+      [handle.toLowerCase().trim(), platform, real_name, city, fan_type, notes, artist_id]
     );
     res.json(rows[0]);
   } catch (err) {
@@ -296,6 +445,14 @@ app.post('/api/fans', requireAuth, async (req, res) => {
 // Search fans (for autocomplete)
 app.get('/api/fans/search', requireAuth, async (req, res) => {
   const q = `%${(req.query.q || '').toLowerCase()}%`;
+  const artistId = req.query.artist_id;
+  if (artistId) {
+    const { rows } = await pool.query(
+      `SELECT * FROM fans WHERE artist_id = $1 AND (LOWER(handle) LIKE $2 OR LOWER(real_name) LIKE $2) ORDER BY handle LIMIT 10`,
+      [artistId, q]
+    );
+    return res.json(rows);
+  }
   const { rows } = await pool.query(
     `SELECT * FROM fans WHERE LOWER(handle) LIKE $1 OR LOWER(real_name) LIKE $1 ORDER BY handle LIMIT 10`,
     [q]
@@ -332,6 +489,9 @@ app.post('/api/sightings', requireAuth, async (req, res) => {
 
 // Dashboard: top fans with scores
 app.get('/api/dashboard', requireAuth, async (req, res) => {
+  const artistId = req.query.artist_id;
+  const whereClause = artistId ? 'WHERE f.artist_id = $1' : '';
+  const params = artistId ? [artistId] : [];
   const { rows } = await pool.query(`
     SELECT
       f.id, f.handle, f.platform, f.real_name, f.city, f.fan_type, f.notes,
@@ -347,14 +507,18 @@ app.get('/api/dashboard', requireAuth, async (req, res) => {
       MAX(s.created_at) AS last_seen
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
+    ${whereClause}
     GROUP BY f.id
     ORDER BY score DESC
-  `);
+  `, params);
   res.json(rows);
 });
 
 // CSV Export (matches original spreadsheet format)
 app.get('/api/export.csv', requireAuth, async (req, res) => {
+  const artistId = req.query.artist_id;
+  const whereClause = artistId ? 'WHERE f.artist_id = $1' : '';
+  const params = artistId ? [artistId] : [];
   const { rows } = await pool.query(`
     SELECT
       f.handle AS "Fan Handle",
@@ -381,9 +545,10 @@ app.get('/api/export.csv', requireAuth, async (req, res) => {
       GREATEST(COUNT(DISTINCT s.show_id) - 1, 0) * 3 AS "Score"
     FROM fans f
     LEFT JOIN sightings s ON s.fan_id = f.id
+    ${whereClause}
     GROUP BY f.id
     ORDER BY "Score" DESC
-  `);
+  `, params);
 
   const headers = ['Fan Handle','Platform','Real Name','City','Commented Repeatedly','Shared/Reposted','Bought Merch','Attended Show','Attended Multiple Shows','Runs Fan Page','Creates Content / Edits','Frequent DMs / Replies','Fan Type','Notes','Score'];
   const csvRows = [headers.join(',')];
@@ -402,6 +567,22 @@ app.get('/api/export.csv', requireAuth, async (req, res) => {
 
 // Stats
 app.get('/api/stats', requireAuth, async (req, res) => {
+  const artistId = req.query.artist_id;
+  if (artistId) {
+    const fans = await pool.query('SELECT COUNT(*) FROM fans WHERE artist_id = $1', [artistId]);
+    const sightings = await pool.query('SELECT COUNT(*) FROM sightings WHERE fan_id IN (SELECT id FROM fans WHERE artist_id = $1)', [artistId]);
+    const shows = await pool.query('SELECT COUNT(DISTINCT show_id) FROM sightings WHERE fan_id IN (SELECT id FROM fans WHERE artist_id = $1)', [artistId]);
+    const topCity = await pool.query(`
+      SELECT city, COUNT(*) as cnt FROM fans WHERE artist_id = $1 AND city IS NOT NULL
+      GROUP BY city ORDER BY cnt DESC LIMIT 5
+    `, [artistId]);
+    return res.json({
+      total_fans: parseInt(fans.rows[0].count),
+      total_sightings: parseInt(sightings.rows[0].count),
+      shows_logged: parseInt(shows.rows[0].count),
+      top_cities: topCity.rows
+    });
+  }
   const fans = await pool.query('SELECT COUNT(*) FROM fans');
   const sightings = await pool.query('SELECT COUNT(*) FROM sightings');
   const shows = await pool.query('SELECT COUNT(DISTINCT show_id) FROM sightings');
