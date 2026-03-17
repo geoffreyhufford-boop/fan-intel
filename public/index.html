@@ -5,23 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Fan Intel</title>
+  <title>Fanintel</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* SPLASH — Neumorphic (matching waxed enterprise) */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #1A1916;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      overflow: hidden;
+    }
+    #splash.fade-out { opacity: 0; transform: scale(1.03); pointer-events: none; }
+    .boot-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      will-change: transform, opacity;
+    }
+    .boot-blob-1 {
+      width: 60vw; height: 60vh; right: -15%; bottom: -10%;
+      background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 40%, transparent 70%);
+      animation: bdrift1 6s ease-in-out infinite alternate;
+    }
+    .boot-blob-2 {
+      width: 50vw; height: 50vh; left: -10%; top: -5%;
+      background: radial-gradient(circle, rgba(210,180,140,0.06) 0%, rgba(180,150,110,0.03) 50%, transparent 70%);
+      animation: bdrift2 7s ease-in-out infinite alternate;
+    }
+    .boot-blob-3 {
+      width: 45vw; height: 40vh; right: 10%; top: 15%;
+      background: radial-gradient(circle, rgba(34,197,94,0.04) 0%, transparent 65%);
+      animation: bdrift3 5s ease-in-out infinite alternate;
+    }
+    .boot-blob-4 {
+      width: 40vw; height: 45vh; left: 20%; bottom: 5%;
+      background: radial-gradient(circle, rgba(160,140,110,0.06) 0%, rgba(120,100,80,0.03) 50%, transparent 70%);
+      animation: bdrift4 8s ease-in-out infinite alternate;
+    }
+    @keyframes bdrift1 { 0%{transform:translate(0,0) scale(1);opacity:.8} 100%{transform:translate(-8vw,-6vh) scale(1.15);opacity:1} }
+    @keyframes bdrift2 { 0%{transform:translate(0,0) scale(1);opacity:.6} 100%{transform:translate(6vw,8vh) scale(1.1);opacity:.9} }
+    @keyframes bdrift3 { 0%{transform:translate(0,0) scale(1);opacity:.5} 100%{transform:translate(-5vw,4vh) scale(1.2);opacity:.8} }
+    @keyframes bdrift4 { 0%{transform:translate(0,0) scale(1);opacity:.4} 100%{transform:translate(4vw,-5vh) scale(1.1);opacity:.7} }
+    /* Grain overlay */
+    .boot-grain {
+      position: absolute; inset: 0; opacity: 0.04; mix-blend-mode: overlay; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat; background-size: 512px 512px;
+    }
+    .boot-inner { position: relative; width: 100%; max-width: 420px; padding: 0 24px; }
+    .boot-logo {
+      font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #E8E0D8;
+    }
+    .boot-logo-accent {
+      display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 8px;
+      background: #22C55E; color: #F0EBE1; border-radius: 10px; margin-left: 10px;
+      font-family: 'SF Mono', monospace; vertical-align: middle;
+    }
+    .boot-version {
+      display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 8px;
+      border: 1px solid #B2BEC3; border-radius: 10px; color: #6B7280; margin-left: 6px;
+      font-family: 'SF Mono', monospace; vertical-align: middle;
+    }
+    .boot-sub { font-size: 10px; color: #22C55E; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; font-family: 'SF Mono', monospace; }
+    .boot-nodes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 24px 0; }
+    .boot-node {
+      border: 1px solid #3A382E; border-radius: 16px; padding: 14px 12px; min-height: 90px;
+      transition: all 0.5s;
+      background: #1A1916;
+      box-shadow: 6px 6px 12px #0f0e0c, -6px -6px 12px #252420;
+    }
+    .boot-node.on {
+      border-color: #22C55E44;
+      background: color-mix(in srgb, #22C55E 5%, #F0EBE1);
+      box-shadow: 6px 6px 12px #0f0e0c, -6px -6px 12px #252420, inset 0 0 0 1px rgba(34,197,94,0.1);
+    }
+    .boot-node-code { font-size: 9px; color: #706858; font-family: 'SF Mono', monospace; margin-bottom: 8px; }
+    .boot-node.on .boot-node-code { color: #22C55E; }
+    .boot-node-name { font-size: 13px; font-weight: 600; color: #706858; font-family: 'SF Mono', monospace; transition: color 0.5s; }
+    .boot-node.on .boot-node-name { color: #E8E0D8; }
+    .boot-node-dot { width: 7px; height: 7px; border-radius: 50%; background: #3A382E; float: right; transition: background 0.3s; }
+    .boot-node.on .boot-node-dot { background: #22C55E; box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+    .boot-node-status { font-size: 9px; color: #706858; font-family: 'SF Mono', monospace; margin-top: 8px; transition: color 0.5s; }
+    .boot-node.on .boot-node-status { color: #6B7280; }
+    .boot-progress {
+      height: 24px; border: 1px solid #3A382E; border-radius: 12px; overflow: hidden;
+      position: relative; margin: 20px 0;
+      background: #1A1916;
+      box-shadow: inset 2px 2px 5px #0f0e0c, inset -2px -2px 5px #252420;
+    }
+    .boot-progress-fill {
+      height: 100%; width: 0%; border-radius: 12px;
+      background: linear-gradient(90deg, #22C55E, #4ade80);
+      transition: width 0.1s linear;
+    }
+    .boot-progress-text {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 12px; font-size: 9px; font-family: 'SF Mono', monospace; color: #6B7280; z-index: 1;
+    }
+    .boot-log {
+      border: 1px solid #3A382E; border-radius: 14px; padding: 12px 14px;
+      background: color-mix(in srgb, #3A382E 15%, #F0EBE1); min-height: 110px; margin-bottom: 16px;
+    }
+    .boot-log-label { font-size: 8px; color: #706858; font-family: 'SF Mono', monospace; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .boot-log-tag { font-size: 8px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: #3A382E; color: #6B7280; }
+    .boot-log-line {
+      font-size: 10px; font-family: 'SF Mono', monospace; color: #6B7280; margin-bottom: 2px;
+      display: flex; gap: 8px;
+    }
+    .boot-log-line .num { color: #706858; font-size: 8px; min-width: 14px; }
+    .boot-log-line.current { color: #22C55E; }
+    .boot-log-line.final { color: #22C55E; font-weight: 600; }
+    .boot-log-line.done .check { color: #22C55E; }
+    .boot-cursor {
+      display: inline-block; width: 6px; height: 12px; background: #22C55E;
+      border-radius: 1px; margin-left: 22px; animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
     :root {
-      --bg: #0a0a0a;
-      --surface: #161616;
-      --surface2: #1e1e1e;
-      --border: #2a2a2a;
-      --text: #e8e8e8;
-      --text2: #888;
-      --accent: #ff6b35;
-      --accent2: #ff8c5a;
-      --green: #4ade80;
-      --red: #f87171;
-      --blue: #60a5fa;
+      --bg: #1A1916;
+      --surface: #1A1916;
+      --surface2: #232220;
+      --border: #3A382E;
+      --text: #E8E0D8;
+      --text2: #706858;
+      --accent: #22C55E;
+      --accent2: #16A34A;
+      --green: #22C55E;
+      --red: #EF4444;
+      --blue: #3B82F6;
+      --shadow-raised: 4px 4px 10px #0f0e0c, -4px -4px 10px #252420;
+      --shadow-inset: inset 2px 2px 5px #0f0e0c, inset -2px -2px 5px #252420;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
@@ -40,19 +161,20 @@
       height: 100dvh;
       gap: 24px;
     }
-    #pin-screen h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    #pin-screen h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
     #pin-screen .subtitle { color: var(--text2); font-size: 14px; }
     #pin-input {
       font-size: 32px;
       text-align: center;
       width: 200px;
       padding: 16px;
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 16px;
       color: var(--text);
       letter-spacing: 12px;
       -webkit-text-security: disc;
+      box-shadow: var(--shadow-inset);
     }
     #pin-error { color: var(--red); font-size: 14px; display: none; }
 
@@ -170,6 +292,66 @@
     .amp-handle { font-weight: 600; font-size: 14px; }
     .amp-meta { font-size: 12px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+    /* TICKET CARDS */
+    .ticket-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-raised);
+    }
+    .ticket-card.status-hot { border-left: 3px solid #4ade80; }
+    .ticket-card.status-building { border-left: 3px solid #facc15; }
+    .ticket-card.status-slow { border-left: 3px solid #f87171; }
+    .ticket-card.status-past { opacity: 0.4; }
+    .ticket-progress {
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .ticket-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s;
+    }
+    .ticket-spark {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* INSIGHT TABS */
+    .insight-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 3px;
+      border: 1px solid var(--border);
+    }
+    .insight-tab {
+      flex: 1;
+      padding: 9px 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.15s;
+    }
+    .insight-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .insight-panel { display: none; }
+    .insight-panel.active { display: block; }
+    .social-panel { display: none; }
+    .social-panel.active { display: block; }
+
     /* ARTIST SWITCHER */
     .artist-bar {
       display: flex;
@@ -177,7 +359,7 @@
       gap: 8px;
       padding: 8px 16px;
       padding-top: calc(8px + env(safe-area-inset-top, 0));
-      background: var(--surface);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
@@ -199,7 +381,7 @@
     }
     .artist-chip {
       padding: 6px 14px;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 20px;
       color: var(--text2);
@@ -208,11 +390,13 @@
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s;
+      box-shadow: 3px 3px 6px #0f0e0c, -3px -3px 6px #2a2820;
     }
     .artist-chip.active {
-      background: rgba(255, 107, 53, 0.15);
+      background: color-mix(in srgb, var(--accent) 12%, var(--bg));
       border-color: var(--accent);
       color: var(--accent);
+      box-shadow: var(--shadow-inset);
     }
     .artist-chip-add {
       padding: 6px 10px;
@@ -232,10 +416,11 @@
       left: 0;
       right: 0;
       display: flex;
-      background: var(--surface);
+      background: var(--bg);
       border-top: 1px solid var(--border);
       padding-bottom: env(safe-area-inset-bottom, 0);
       z-index: 100;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
     }
     .nav button {
       flex: 1;
@@ -267,10 +452,12 @@
 
     /* TONIGHT BANNER */
     .tonight {
-      background: linear-gradient(135deg, var(--accent), #e55a2b);
-      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #16A34A);
+      border-radius: 16px;
       padding: 18px;
       margin-bottom: 20px;
+      color: #fff;
+      box-shadow: 4px 4px 12px #0f0e0c;
     }
     .tonight .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
     .tonight .venue { font-size: 20px; font-weight: 700; margin: 4px 0; }
@@ -278,11 +465,12 @@
 
     /* CARDS */
     .card {
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 16px;
       margin-bottom: 12px;
+      box-shadow: var(--shadow-raised);
     }
 
     /* FORM */
@@ -299,12 +487,13 @@
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 12px;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
       font-size: 16px;
       font-family: inherit;
+      box-shadow: var(--shadow-inset);
     }
     .form-group textarea { resize: vertical; min-height: 60px; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
@@ -323,19 +512,21 @@
       align-items: center;
       gap: 10px;
       padding: 12px;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 14px;
       transition: all 0.15s;
       user-select: none;
       -webkit-user-select: none;
+      box-shadow: var(--shadow-raised);
     }
     .toggle.on {
-      background: rgba(255, 107, 53, 0.15);
+      background: color-mix(in srgb, var(--accent) 10%, var(--bg));
       border-color: var(--accent);
       color: var(--accent2);
+      box-shadow: var(--shadow-inset);
     }
     .toggle .check {
       width: 22px;
@@ -362,19 +553,21 @@
     .platform-btn {
       flex: 1;
       padding: 10px;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text2);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
+      box-shadow: var(--shadow-raised);
     }
     .platform-btn.active {
-      background: rgba(255, 107, 53, 0.15);
+      background: color-mix(in srgb, var(--accent) 10%, var(--bg));
       border-color: var(--accent);
       color: var(--accent);
+      box-shadow: var(--shadow-inset);
     }
 
     /* BTN */
@@ -391,12 +584,14 @@
     .btn-primary {
       background: var(--accent);
       color: #fff;
+      box-shadow: 4px 4px 8px #0f0e0c, -4px -4px 8px #252420;
     }
-    .btn-primary:active { background: #e55a2b; }
+    .btn-primary:active { background: var(--accent2); box-shadow: var(--shadow-inset); }
     .btn-secondary {
-      background: var(--surface2);
+      background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
+      box-shadow: var(--shadow-raised);
     }
 
     /* FAN LIST */
@@ -445,11 +640,12 @@
       margin-bottom: 20px;
     }
     .stat-box {
-      background: var(--surface);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 16px;
       text-align: center;
+      box-shadow: var(--shadow-raised);
     }
     .stat-num { font-size: 28px; font-weight: 700; color: var(--accent); }
     .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
@@ -483,15 +679,16 @@
       left: 16px;
       right: 16px;
       background: var(--green);
-      color: #000;
+      color: #fff;
       padding: 14px 18px;
-      border-radius: 12px;
+      border-radius: 14px;
       font-weight: 600;
       font-size: 15px;
       text-align: center;
       z-index: 200;
       transform: translateY(-120%);
       transition: transform 0.3s ease;
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
     }
     .toast.show { transform: translateY(0); }
 
@@ -500,19 +697,21 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
       z-index: 150;
       align-items: flex-end;
     }
     .modal-overlay.show { display: flex; }
     .modal {
       width: 100%;
-      background: var(--surface);
-      border-radius: 20px 20px 0 0;
+      background: var(--bg);
+      border-radius: 24px 24px 0 0;
       padding: 20px 16px;
       padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
       max-height: 85dvh;
       overflow-y: auto;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.1);
     }
     .modal-handle {
       width: 40px;
@@ -531,11 +730,12 @@
     .search-box input {
       width: 100%;
       padding: 12px 12px 12px 40px;
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
       font-size: 16px;
+      box-shadow: var(--shadow-inset);
     }
     .search-box::before {
       content: '🔍';
@@ -548,9 +748,10 @@
 
     /* AUTOCOMPLETE */
     .autocomplete-results {
-      background: var(--surface2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-raised);
       margin-top: -10px;
       margin-bottom: 16px;
       display: none;
@@ -570,10 +771,68 @@
 </head>
 <body>
 
+<!-- SPLASH BOOT SCREEN -->
+<div id="splash">
+  <div class="boot-blob boot-blob-1"></div>
+  <div class="boot-blob boot-blob-2"></div>
+  <div class="boot-blob boot-blob-3"></div>
+  <div class="boot-blob boot-blob-4"></div>
+  <div class="boot-grain"></div>
+  <div class="boot-inner">
+    <div style="margin-bottom:24px">
+      <img src="/fanintel-logo.png" alt="Fanintel" style="height:48px;margin-bottom:10px;object-fit:contain;filter:brightness(0) invert(1)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="boot-logo-accent">fi</span>
+        <span class="boot-version">v1.0</span>
+      </div>
+      <div class="boot-sub">fan intelligence platform</div>
+    </div>
+
+    <div class="boot-nodes">
+      <div class="boot-node" id="bnode-0">
+        <div style="display:flex;justify-content:space-between"><span class="boot-node-code">sys_01</span><span class="boot-node-dot"></span></div>
+        <div class="boot-node-name">Fans</div>
+        <div class="boot-node-status">—</div>
+      </div>
+      <div class="boot-node" id="bnode-1">
+        <div style="display:flex;justify-content:space-between"><span class="boot-node-code">sys_02</span><span class="boot-node-dot"></span></div>
+        <div class="boot-node-name">Analytics</div>
+        <div class="boot-node-status">—</div>
+      </div>
+      <div class="boot-node" id="bnode-2">
+        <div style="display:flex;justify-content:space-between"><span class="boot-node-code">sys_03</span><span class="boot-node-dot"></span></div>
+        <div class="boot-node-name">Streaming</div>
+        <div class="boot-node-status">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="flex:1;height:1px;background:#D0D5DC"></div>
+      <span style="font-size:9px;color:#22C55E;font-family:'SF Mono',monospace;letter-spacing:1px">fanintel portal</span>
+      <div style="flex:1;height:1px;background:#D0D5DC"></div>
+    </div>
+
+    <div class="boot-progress">
+      <div class="boot-progress-text"><span>initializing</span><span id="boot-pct">0%</span></div>
+      <div class="boot-progress-fill" id="boot-fill"></div>
+    </div>
+
+    <div class="boot-log">
+      <div class="boot-log-label"><span class="boot-log-tag">sys</span> boot log</div>
+      <div id="boot-log-lines"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:#B2BEC3;font-family:'SF Mono',monospace">
+      <span>477 / waxed</span>
+      <span>fan intelligence platform</span>
+    </div>
+  </div>
+</div>
+
 <!-- PIN SCREEN -->
 <div id="pin-screen">
-  <h1>Fan Intel</h1>
-  <p class="subtitle">Tour Data Collection</p>
+  <img src="/fanintel-logo.png" alt="Fanintel" style="height:44px;margin-bottom:8px;object-fit:contain;filter:brightness(0) invert(1)">
+  <p class="subtitle">Fan Intelligence Platform</p>
   <input type="tel" id="pin-input" maxlength="4" placeholder="····" inputmode="numeric" autocomplete="off">
   <p id="pin-error">Wrong PIN</p>
 </div>
@@ -581,18 +840,20 @@
 <!-- MAIN APP -->
 <div id="app" style="display:none">
 
-  <!-- ARTIST SWITCHER -->
-  <div class="artist-bar">
-    <span class="label">Artist</span>
+  <!-- APP HEADER (sticky) -->
+  <div style="position:sticky;top:0;z-index:91;background:var(--bg)">
+    <div class="artist-bar" style="padding-top:calc(8px + env(safe-area-inset-top, 0));padding-bottom:8px;border-bottom:1px solid var(--border);gap:12px">
+      <img src="/fanintel-logo.png" alt="Fanintel" style="height:44px;object-fit:contain;filter:brightness(0) invert(1);flex-shrink:0;margin:-8px 0">
+    <div style="width:1px;height:20px;background:var(--border);flex-shrink:0"></div>
     <div class="artist-chips" id="artist-chips"></div>
     <div class="artist-chip-add" id="btn-add-artist">+ New</div>
-  </div>
+  </div><!-- /sticky header -->
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
 
   <!-- SCREEN: ADD -->
-  <div class="screen active" id="screen-add">
+  <div class="screen" id="screen-add">
     <div class="screen-title">Add Fan</div>
     <div class="screen-sub" id="tonight-sub">Loading show...</div>
 
@@ -650,7 +911,7 @@
           <label>What did they do?</label>
         </div>
         <div class="toggles">
-          <div class="toggle on" data-field="attended_show"><span class="check">✓</span>At the show</div>
+          <div class="toggle" data-field="attended_show"><span class="check">✓</span>At the show</div>
           <div class="toggle" data-field="bought_merch"><span class="check">✓</span>Bought merch</div>
           <div class="toggle" data-field="commented_repeatedly"><span class="check">✓</span>Comments a lot</div>
           <div class="toggle" data-field="shared_reposted"><span class="check">✓</span>Shares/reposts</div>
@@ -701,7 +962,7 @@
           <label>What did they do tonight?</label>
         </div>
         <div class="toggles" id="rf-toggles">
-          <div class="toggle on" data-field="attended_show"><span class="check">✓</span>At the show</div>
+          <div class="toggle" data-field="attended_show"><span class="check">✓</span>At the show</div>
           <div class="toggle" data-field="bought_merch"><span class="check">✓</span>Bought merch</div>
           <div class="toggle" data-field="commented_repeatedly"><span class="check">✓</span>Comments a lot</div>
           <div class="toggle" data-field="shared_reposted"><span class="check">✓</span>Shares/reposts</div>
@@ -783,133 +1044,279 @@
   <div class="screen" id="screen-shows">
     <div class="screen-title" id="shows-title">Tour</div>
     <div class="screen-sub" id="shows-sub"></div>
+
+    <!-- Tour Stats -->
+    <div id="tour-stats" style="display:none">
+      <div class="stat-grid" style="margin-bottom:16px">
+        <div class="stat-box"><div class="stat-num" id="ts-total-sold">0</div><div class="stat-label">Total Sold</div></div>
+        <div class="stat-box"><div class="stat-num" id="ts-avg-pct">0%</div><div class="stat-label">Avg % Sold</div></div>
+        <div class="stat-box"><div class="stat-num" id="ts-total-open">0</div><div class="stat-label">Open Tickets</div></div>
+        <div class="stat-box"><div class="stat-num" id="ts-weekly-vel">0</div><div class="stat-label">Weekly Velocity</div></div>
+      </div>
+
+      <!-- Status Breakdown -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto" id="tour-filter-btns">
+        <div class="tour-filter active" data-filter="all" style="padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--accent);color:var(--accent);background:rgba(255,107,53,0.1)">All Shows</div>
+        <div class="tour-filter" data-filter="hot" style="padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border);color:var(--text2);background:transparent">Hot (50%+)</div>
+        <div class="tour-filter" data-filter="building" style="padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border);color:var(--text2);background:transparent">Building (25-50%)</div>
+        <div class="tour-filter" data-filter="slow" style="padding:6px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--border);color:var(--text2);background:transparent">Slow (&lt;25%)</div>
+      </div>
+    </div>
+
+    <!-- Ticket Show Cards -->
+    <div id="ticket-show-list"></div>
+
+    <!-- Fallback show list -->
     <div class="card" id="show-list" style="padding:0;overflow:hidden"></div>
   </div>
 
   <!-- SCREEN: INSIGHTS -->
-  <div class="screen" id="screen-insights">
+  <div class="screen active" id="screen-insights">
     <div class="screen-title">Insights</div>
     <div class="screen-sub" id="insights-sub">Fan intelligence breakdown</div>
 
-    <!-- Score Tiers with donut -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Fan Tiers</div>
-      <div style="display:flex;align-items:center;gap:16px">
-        <div style="flex-shrink:0">
-          <svg id="tier-donut" width="120" height="120" viewBox="0 0 120 120"></svg>
+    <!-- Tab Navigation -->
+    <div class="insight-tabs" id="insight-tabs">
+      <div class="insight-tab active" data-panel="panel-overview">Overview</div>
+      <div class="insight-tab" data-panel="panel-fans">Fans</div>
+      <div class="insight-tab" data-panel="panel-geo">Geography</div>
+      <div class="insight-tab" data-panel="panel-socials">Socials</div>
+    </div>
+
+    <!-- PANEL: OVERVIEW -->
+    <div class="insight-panel active" id="panel-overview">
+
+      <!-- Verified Fans Hero -->
+      <div style="background:linear-gradient(135deg, var(--accent), var(--accent)88);border-radius:14px;padding:20px;margin-bottom:16px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;opacity:0.8;margin-bottom:6px">Verified Fan Intelligence</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+          <div id="verified-count" style="font-size:36px;font-weight:800;line-height:1">0</div>
+          <div style="font-size:15px;font-weight:600;opacity:0.9">Proven Fans</div>
         </div>
-        <div id="tier-legend" style="flex:1"></div>
-      </div>
-    </div>
-
-    <!-- Fan Funnel -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Engagement Funnel</div>
-      <div id="funnel-chart"></div>
-    </div>
-
-    <!-- Behavior Breakdown -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Behavior Breakdown</div>
-      <div class="beh-grid" id="beh-grid"></div>
-    </div>
-
-    <!-- Fan Map -->
-    <div class="card" style="margin-bottom:16px;padding:16px 16px 8px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Fan Map</div>
-      <div id="fan-map" style="width:100%;border-radius:10px;overflow:hidden"></div>
-    </div>
-
-    <!-- City Breakdown -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Cities</div>
-      <div class="bar-chart" id="city-bars"></div>
-    </div>
-
-    <!-- Platform Breakdown -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Platforms</div>
-      <div class="bar-chart" id="platform-bars"></div>
-    </div>
-
-    <!-- Top Amplifiers -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Amplifiers</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who create content & share — your organic marketing engine</div>
-      <div id="amplifier-list" style="margin:0 -16px"></div>
-    </div>
-
-    <!-- Crossover Fans -->
-    <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px">Crossover Fans</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who follow multiple artists — shared audience signals</div>
-      <div id="crossover-list" style="margin:0 -16px"></div>
-    </div>
-
-    <!-- SPOTIFY SECTION -->
-    <div id="spotify-section" style="display:none">
-      <div style="font-size:20px;font-weight:700;margin:24px 0 16px;display:flex;align-items:center;gap:8px">
-        <span style="color:#1DB954">●</span> Spotify Data
-      </div>
-
-      <!-- Streaming Trends -->
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming Trends</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Daily data since Jan 2024</div>
-        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap" id="trend-metric-picker"></div>
-        <canvas id="trend-chart" style="width:100%;height:180px"></canvas>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:4px">
-          <span id="trend-start"></span><span id="trend-end"></span>
+        <div style="font-size:12px;opacity:0.75;line-height:1.5">
+          Real people with verified actions — showed up, bought merch, created content, DMed. Not streams, not followers. <strong>Behavioral proof.</strong>
         </div>
-        <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap" id="trend-stats"></div>
       </div>
 
-      <!-- Demographics -->
+      <!-- Verified vs Passive comparison -->
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <div class="card" style="flex:1;text-align:center;border-left:3px solid var(--accent);margin-bottom:0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;margin-bottom:6px">Proven</div>
+          <div id="proven-stat" style="font-size:24px;font-weight:800;color:var(--accent)">0</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Identified & scored</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;border-left:3px solid #1DB954;margin-bottom:0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1DB954;font-weight:700;margin-bottom:6px">Streaming</div>
+          <div id="streaming-stat" style="font-size:24px;font-weight:800;color:#1DB954">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Monthly listeners</div>
+        </div>
+        <div class="card" style="flex:1;text-align:center;border-left:3px solid #60a5fa;margin-bottom:0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#60a5fa;font-weight:700;margin-bottom:6px">Conversion</div>
+          <div id="conversion-stat" style="font-size:24px;font-weight:800;color:#60a5fa">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Proven / listeners</div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stat-grid" id="insight-stats" style="margin-bottom:16px"></div>
+
+      <!-- Score Tiers with donut -->
       <div class="card" style="margin-bottom:16px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Demographics</div>
-        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Fan Tiers</div>
+        <div style="display:flex;align-items:center;gap:16px">
           <div style="flex-shrink:0">
-            <svg id="gender-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
+            <svg id="tier-donut" width="120" height="120" viewBox="0 0 120 120"></svg>
           </div>
-          <div id="gender-legend" style="flex:1;min-width:100px"></div>
-        </div>
-        <div style="margin-top:16px">
-          <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px">AGE DISTRIBUTION</div>
-          <div id="age-bars"></div>
+          <div id="tier-legend" style="flex:1"></div>
         </div>
       </div>
 
-      <!-- Streaming Map -->
+      <!-- Engagement Funnel -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Engagement Funnel</div>
+        <div id="funnel-chart"></div>
+      </div>
+
+      <!-- Behavior Breakdown -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Behavior Breakdown</div>
+        <div class="beh-grid" id="beh-grid"></div>
+      </div>
+    </div>
+
+    <!-- PANEL: FANS -->
+    <div class="insight-panel" id="panel-fans">
+      <!-- Top Amplifiers -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Amplifiers</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who create content & share — your organic marketing engine</div>
+        <div id="amplifier-list" style="margin:0 -16px"></div>
+      </div>
+
+      <!-- Crossover Fans -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Crossover Fans</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Fans who follow multiple artists — shared audience signals</div>
+        <div id="crossover-list" style="margin:0 -16px"></div>
+      </div>
+
+      <!-- Platform Breakdown -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Platforms</div>
+        <div class="bar-chart" id="platform-bars"></div>
+      </div>
+    </div>
+
+    <!-- PANEL: GEOGRAPHY -->
+    <div class="insight-panel" id="panel-geo">
+      <!-- Fan Map -->
       <div class="card" style="margin-bottom:16px;padding:16px 16px 8px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming vs Superfans Map</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
-          <span style="color:#1DB954">●</span> Spotify listeners &nbsp;
-          <span style="color:${currentArtist ? currentArtist.color : '#ff6b35'}">●</span> Identified superfans
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:15px;font-weight:700">Fan Map</div>
+          <div style="display:flex;gap:6px">
+            <div id="spotify-toggle" style="display:none;cursor:pointer;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid #1DB954;color:#1DB954;background:transparent;transition:all 0.15s" onclick="toggleSpotifyLayer()">
+              Spotify
+            </div>
+            <div id="youtube-toggle" style="display:none;cursor:pointer;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid #FF0000;color:#FF0000;background:transparent;transition:all 0.15s" onclick="toggleYouTubeLayer()">
+              YouTube
+            </div>
+          </div>
         </div>
-        <div id="spotify-map" style="width:100%;height:300px;border-radius:10px;overflow:hidden"></div>
+        <div id="fan-map-legend" style="font-size:11px;color:var(--text2);margin-bottom:8px">
+          <span id="fan-map-legend-accent" style="color:var(--accent)">●</span> Superfans
+          <span id="fan-map-legend-spotify" style="display:none"> &nbsp; <span style="color:#1DB954">●</span> Spotify</span>
+          <span id="fan-map-legend-youtube" style="display:none"> &nbsp; <span style="color:#FF0000">●</span> YouTube</span>
+        </div>
+        <div id="fan-map" style="width:100%;border-radius:10px;overflow:hidden"></div>
       </div>
 
-      <!-- Market Gap -->
+      <!-- City Breakdown -->
       <div class="card" style="margin-bottom:16px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:4px">Market Gaps</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">US cities with high streams but no superfans identified — untapped potential</div>
-        <div id="market-gaps"></div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Cities</div>
+        <div class="bar-chart" id="city-bars"></div>
+      </div>
+    </div>
+
+    <!-- PANEL: SPOTIFY -->
+    <!-- PANEL: SOCIALS -->
+    <div class="insight-panel" id="panel-socials">
+      <!-- Platform switcher -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto" id="social-platform-picker">
+        <div class="social-plat-btn active" data-social="social-spotify" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #1DB954;color:#1DB954;background:#1DB95415;white-space:nowrap">
+          <span style="font-size:16px">●</span> Spotify
+        </div>
+        <div class="social-plat-btn" data-social="social-youtube" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;white-space:nowrap">
+          <span style="font-size:14px">▶</span> YouTube
+        </div>
+        <div class="social-plat-btn" data-social="social-compare" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;white-space:nowrap">
+          ⟷ Compare
+        </div>
       </div>
 
-      <!-- Top Countries -->
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Countries</div>
-        <div class="bar-chart" id="country-bars"></div>
+      <!-- SPOTIFY SUB-PANEL -->
+      <div class="social-panel active" id="social-spotify">
+        <div id="spotify-section" style="display:none">
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming Trends</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Daily data since Jan 2024</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap" id="trend-metric-picker"></div>
+            <canvas id="trend-chart" style="width:100%;height:180px"></canvas>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:4px">
+              <span id="trend-start"></span><span id="trend-end"></span>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap" id="trend-stats"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Demographics</div>
+            <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+              <div style="flex-shrink:0">
+                <svg id="gender-donut" width="110" height="110" viewBox="0 0 110 110"></svg>
+              </div>
+              <div id="gender-legend" style="flex:1;min-width:100px"></div>
+            </div>
+            <div style="margin-top:16px">
+              <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px">AGE DISTRIBUTION</div>
+              <div id="age-bars"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px;padding:16px 16px 8px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Streaming vs Superfans</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+              <span style="color:#1DB954">●</span> Spotify listeners &nbsp;
+              <span id="superfan-legend-dot">●</span> Identified superfans
+            </div>
+            <div id="spotify-map" style="width:100%;height:300px;border-radius:10px;overflow:hidden"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Market Gaps</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">US cities with high streams but no superfans identified</div>
+            <div id="market-gaps"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Countries</div>
+            <div class="bar-chart" id="country-bars"></div>
+          </div>
+        </div>
+
+        <div id="no-spotify-data" style="display:none">
+          <div class="card" style="text-align:center;padding:40px 16px;color:var(--text2)">
+            <div style="font-size:32px;margin-bottom:12px;color:#1DB954">●</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">No Spotify data yet</div>
+            <div style="font-size:13px">Export from Spotify for Artists to see streaming insights</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YOUTUBE SUB-PANEL -->
+      <div class="social-panel" id="social-youtube">
+        <div id="youtube-section" style="display:none">
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Monthly Views</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Last 5 years</div>
+            <canvas id="yt-trend-chart" style="width:100%;height:160px"></canvas>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:4px">
+              <span id="yt-trend-start"></span><span id="yt-trend-end"></span>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap" id="yt-trend-stats"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Countries by Views</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">All-time vs last 12 months — <span style="color:#FF0000">●</span> recent <span style="color:#666">●</span> all-time</div>
+            <div id="yt-country-bars"></div>
+          </div>
+        </div>
+
+        <div id="no-youtube-data" style="display:none">
+          <div class="card" style="text-align:center;padding:40px 16px;color:var(--text2)">
+            <div style="font-size:32px;margin-bottom:12px;color:#FF0000">▶</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">No YouTube data yet</div>
+            <div style="font-size:13px">Export from YouTube Studio to see view insights</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPARE SUB-PANEL -->
+      <div class="social-panel" id="social-compare">
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">YouTube vs Spotify</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Top country ranking comparison</div>
+          <div id="platform-compare"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- NAV -->
   <div class="nav">
-    <button class="active" data-screen="screen-add"><span class="icon">+</span>Add</button>
+    <button class="active" data-screen="screen-insights"><span class="icon">◇</span>Insights</button>
     <button data-screen="screen-dashboard"><span class="icon">◆</span>Fans</button>
-    <button data-screen="screen-insights"><span class="icon">◇</span>Insights</button>
     <button data-screen="screen-shows"><span class="icon">●</span>Tour</button>
+    <button data-screen="screen-add" style="background:var(--accent);color:#fff;border-radius:12px;margin:6px 8px 6px 0"><span class="icon">+</span>Add Fan</button>
   </div>
 </div>
 
@@ -955,6 +1362,63 @@ let shows = [];
 let selectedReturningFan = null;
 let artists = [];
 let currentArtist = null;
+
+// ----- BOOT SEQUENCE -----
+(function runBoot() {
+  const bootLog = [
+    'fanintel system v1.0',
+    'initializing core modules...',
+    'loading fan database',
+    'connecting analytics engine',
+    'streaming data sync',
+    'geo mapping ready',
+    'system check — all nodes nominal',
+    '→ portal ready',
+  ];
+  const nodeStatuses = ['fan database', 'scoring engine', 'data pipeline'];
+  const logContainer = document.getElementById('boot-log-lines');
+  const fillEl = document.getElementById('boot-fill');
+  const pctEl = document.getElementById('boot-pct');
+  let progress = 0;
+
+  // Stagger boot log lines
+  bootLog.forEach((line, i) => {
+    setTimeout(() => {
+      // Mark previous as done
+      const prev = logContainer.querySelector('.current');
+      if (prev) { prev.classList.remove('current'); prev.classList.add('done'); prev.innerHTML += ' <span class="check">✓</span>'; }
+      const div = document.createElement('div');
+      div.className = 'boot-log-line' + (i === bootLog.length - 1 ? ' current' : ' current');
+      div.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span><span>${line}</span>`;
+      logContainer.appendChild(div);
+    }, 300 + i * 350);
+  });
+
+  // Node power-on
+  nodeStatuses.forEach((status, i) => {
+    setTimeout(() => {
+      const node = document.getElementById('bnode-' + i);
+      node.classList.add('on');
+      node.querySelector('.boot-node-status').textContent = status;
+    }, 600 + i * 500);
+  });
+
+  // Progress bar
+  const progInterval = setInterval(() => {
+    progress += 2;
+    if (progress > 100) { progress = 100; clearInterval(progInterval); }
+    fillEl.style.width = progress + '%';
+    pctEl.textContent = progress + '%';
+  }, 50);
+
+  // Fade out after boot
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('fade-out');
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+    }, 500);
+  }, 3500);
+})();
 
 // ----- AUTH -----
 const pinInput = document.getElementById('pin-input');
@@ -1014,6 +1478,7 @@ async function init() {
   setupSearch();
   setupScreenshot();
   setupArtistSwitcher();
+  loadInsights();
   if (savedName) {
     document.getElementById('f-enteredby').value = savedName;
     document.getElementById('rf-enteredby').value = savedName;
@@ -1061,6 +1526,7 @@ async function switchArtist(artistId) {
   loadTonight();
   await loadDashboard();
   loadInsights();
+  loadTicketData();
   // Reset search and filters
   document.getElementById('dash-search').value = '';
   document.getElementById('filter-pct').value = '100';
@@ -1174,6 +1640,118 @@ function renderShowList() {
   }).join('');
 }
 
+// ----- TICKET DATA -----
+async function loadTicketData() {
+  if (!currentArtist) return;
+  const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+  let ticketData;
+  try {
+    const resp = await fetch('/ticket-data.json');
+    const all = await resp.json();
+    ticketData = all[slug];
+  } catch (e) {}
+
+  const statsEl = document.getElementById('tour-stats');
+  const ticketList = document.getElementById('ticket-show-list');
+  const fallback = document.getElementById('show-list');
+
+  if (!ticketData || !ticketData.shows || ticketData.shows.length === 0) {
+    statsEl.style.display = 'none';
+    ticketList.innerHTML = '';
+    fallback.style.display = 'block';
+    return;
+  }
+
+  statsEl.style.display = 'block';
+  fallback.style.display = 'none';
+
+  const tShows = ticketData.shows;
+  const totalSold = tShows.reduce((s, t) => s + t.sold, 0);
+  const totalOpen = tShows.reduce((s, t) => s + t.open, 0);
+  const avgPct = (tShows.reduce((s, t) => s + t.pct, 0) / tShows.length).toFixed(1);
+  const totalWrap = tShows.reduce((s, t) => s + t.wrap, 0);
+
+  document.getElementById('ts-total-sold').textContent = totalSold.toLocaleString();
+  document.getElementById('ts-avg-pct').textContent = avgPct + '%';
+  document.getElementById('ts-total-open').textContent = totalOpen.toLocaleString();
+  document.getElementById('ts-weekly-vel').textContent = '+' + totalWrap.toLocaleString();
+
+  const today = new Date().toISOString().split('T')[0];
+
+  function renderTicketCards(filter) {
+    let filtered = tShows;
+    if (filter === 'hot') filtered = tShows.filter(t => t.pct >= 50);
+    if (filter === 'building') filtered = tShows.filter(t => t.pct >= 25 && t.pct < 50);
+    if (filter === 'slow') filtered = tShows.filter(t => t.pct < 25);
+
+    ticketList.innerHTML = filtered.map(t => {
+      const isPast = t.date < today;
+      const status = isPast ? 'past' : t.pct >= 50 ? 'hot' : t.pct >= 25 ? 'building' : 'slow';
+      const statusColor = status === 'hot' ? '#4ade80' : status === 'building' ? '#facc15' : status === 'slow' ? '#f87171' : '#666';
+      const statusLabel = status === 'hot' ? 'HOT' : status === 'building' ? 'BUILDING' : status === 'slow' ? 'SLOW' : 'PAST';
+      const d = new Date(t.date);
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const dayStr = d.toLocaleDateString('en-US', { weekday: 'short' });
+
+      // Sparkline from history
+      const hist = t.history || [];
+      const hMax = Math.max(...hist);
+      const hMin = Math.min(...hist);
+      const hRange = hMax - hMin || 1;
+      const sparkW = 80, sparkH = 24;
+      let sparkPath = '';
+      if (hist.length > 1) {
+        sparkPath = hist.map((v, i) => {
+          const x = (i / (hist.length - 1)) * sparkW;
+          const y = sparkH - ((v - hMin) / hRange) * (sparkH - 2);
+          return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+        }).join(' ');
+      }
+
+      return `<div class="ticket-card status-${status}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div>
+            <div style="font-size:15px;font-weight:700">${t.venue}</div>
+            <div style="font-size:12px;color:var(--text2)">${t.city} · ${dayStr} ${dateStr}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${hist.length > 1 ? `<svg class="ticket-spark" width="${sparkW}" height="${sparkH}" viewBox="0 0 ${sparkW} ${sparkH}"><path d="${sparkPath}" fill="none" stroke="${statusColor}" stroke-width="1.5"/></svg>` : ''}
+            <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;background:${statusColor}22;color:${statusColor}">${statusLabel}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+          <div><span style="font-weight:700;font-size:18px;color:${statusColor}">${t.pct.toFixed(1)}%</span></div>
+          <div style="color:var(--text2)">${t.sold.toLocaleString()} / ${t.capacity.toLocaleString()}</div>
+          <div style="margin-left:auto;color:var(--text2)">${t.open.toLocaleString()} open</div>
+          ${t.wrap > 0 ? `<div style="color:#4ade80;font-weight:600">+${t.wrap}</div>` : `<div style="color:#f87171;font-weight:600">+0</div>`}
+        </div>
+        <div class="ticket-progress">
+          <div class="ticket-progress-fill" style="width:${t.pct}%;background:${statusColor}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  renderTicketCards('all');
+
+  // Filter buttons
+  document.querySelectorAll('.tour-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tour-filter').forEach(b => {
+        b.style.borderColor = 'var(--border)';
+        b.style.color = 'var(--text2)';
+        b.style.background = 'transparent';
+        b.classList.remove('active');
+      });
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color = 'var(--accent)';
+      btn.style.background = 'rgba(255,107,53,0.1)';
+      btn.classList.add('active');
+      renderTicketCards(btn.dataset.filter);
+    });
+  });
+}
+
 function loadTonight() {
   if (currentShow) {
     document.getElementById('tonight-banner').style.display = 'block';
@@ -1197,6 +1775,7 @@ function setupNav() {
       document.getElementById(btn.dataset.screen).classList.add('active');
       if (btn.dataset.screen === 'screen-dashboard') loadDashboard();
       if (btn.dataset.screen === 'screen-insights') loadInsights();
+      if (btn.dataset.screen === 'screen-shows') loadTicketData();
     });
   });
 }
@@ -1361,8 +1940,7 @@ async function submitReturningSighting() {
   document.getElementById('rf-merch').value = '';
   document.getElementById('rf-notes').value = '';
   document.querySelectorAll('#rf-toggles .toggle').forEach(t => {
-    if (t.dataset.field === 'attended_show') t.classList.add('on');
-    else t.classList.remove('on');
+    t.classList.remove('on');
   });
 }
 
@@ -1374,8 +1952,7 @@ function resetForm() {
   document.getElementById('f-notes').value = '';
   document.getElementById('fan-search').value = '';
   document.querySelectorAll('#new-fan-form .toggle').forEach(t => {
-    if (t.dataset.field === 'attended_show') t.classList.add('on');
-    else t.classList.remove('on');
+    t.classList.remove('on');
   });
 }
 
@@ -1561,6 +2138,56 @@ async function openFanModal(fanId, fans) {
 }
 
 // ----- INSIGHTS -----
+function toggleSpotifyLayer() {
+  const btn = document.getElementById('spotify-toggle');
+  const legend = document.getElementById('fan-map-legend-spotify');
+  if (window._spotifyLayerVisible) {
+    window._fanMapRef.removeLayer(window._spotifyLayer);
+    window._spotifyLayerVisible = false;
+    btn.textContent = 'Spotify';
+    btn.style.background = 'transparent';
+    btn.style.color = '#1DB954';
+    legend.style.display = 'none';
+    // Zoom back to superfans
+    if (window._fanMapBounds.length > 1) {
+      window._fanMapRef.fitBounds(window._fanMapBounds, { padding: [30, 30], maxZoom: 6 });
+    }
+  } else {
+    window._fanMapRef.addLayer(window._spotifyLayer);
+    window._spotifyLayerVisible = true;
+    btn.textContent = 'Spotify ✓';
+    btn.style.background = '#1DB95422';
+    btn.style.color = '#1DB954';
+    legend.style.display = 'inline';
+    // Zoom out to show world
+    window._fanMapRef.setView([20, 0], 2);
+  }
+}
+
+function toggleYouTubeLayer() {
+  const btn = document.getElementById('youtube-toggle');
+  const legend = document.getElementById('fan-map-legend-youtube');
+  if (window._youtubeLayerVisible) {
+    window._fanMapRef.removeLayer(window._youtubeLayer);
+    window._youtubeLayerVisible = false;
+    btn.textContent = 'YouTube';
+    btn.style.background = 'transparent';
+    btn.style.color = '#FF0000';
+    legend.style.display = 'none';
+    if (window._fanMapBounds.length > 1) {
+      window._fanMapRef.fitBounds(window._fanMapBounds, { padding: [30, 30], maxZoom: 6 });
+    }
+  } else {
+    window._fanMapRef.addLayer(window._youtubeLayer);
+    window._youtubeLayerVisible = true;
+    btn.textContent = 'YouTube ✓';
+    btn.style.background = '#FF000022';
+    btn.style.color = '#FF0000';
+    legend.style.display = 'inline';
+    window._fanMapRef.setView([20, 0], 2);
+  }
+}
+
 async function loadInsights() {
   if (!currentArtist) return;
   const artistParam = `?artist_id=${currentArtist.id}`;
@@ -1571,6 +2198,84 @@ async function loadInsights() {
   ]);
 
   document.getElementById('insights-sub').textContent = `${currentArtist.name} — fan intelligence breakdown`;
+
+  // Setup insight tabs
+  if (!window._insightTabsSetup) {
+    document.querySelectorAll('.insight-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.insight-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.insight-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.panel).classList.add('active');
+        // Fix maps when switching to their panel
+        if (tab.dataset.panel === 'panel-geo' && window._fanMap) setTimeout(() => window._fanMap.invalidateSize(), 100);
+        if (tab.dataset.panel === 'panel-socials') {
+          if (window._spotifyMap) setTimeout(() => window._spotifyMap.invalidateSize(), 100);
+          if (window._reRenderSpotifyTrend) setTimeout(window._reRenderSpotifyTrend, 50);
+        }
+      });
+    });
+    window._insightTabsSetup = true;
+
+    // Social platform sub-tabs
+    const socialColors = { 'social-spotify': '#1DB954', 'social-youtube': '#FF0000', 'social-compare': 'var(--accent)' };
+    document.querySelectorAll('.social-plat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.social-plat-btn').forEach(b => {
+          b.style.borderColor = 'var(--border)';
+          b.style.color = 'var(--text2)';
+          b.style.background = 'transparent';
+        });
+        document.querySelectorAll('.social-panel').forEach(p => p.classList.remove('active'));
+        const target = btn.dataset.social;
+        const color = socialColors[target] || 'var(--accent)';
+        btn.style.borderColor = color;
+        btn.style.color = color;
+        btn.style.background = color.startsWith('#') ? color + '15' : 'rgba(255,255,255,0.05)';
+        document.getElementById(target).classList.add('active');
+        if (target === 'social-spotify') {
+          if (window._spotifyMap) setTimeout(() => window._spotifyMap.invalidateSize(), 100);
+          if (window._reRenderSpotifyTrend) setTimeout(window._reRenderSpotifyTrend, 50);
+        }
+        if (target === 'social-youtube' && window._reRenderYtTrend) setTimeout(window._reRenderYtTrend, 50);
+      });
+    });
+  }
+
+  // Update superfan legend dot color
+  const legendDot = document.getElementById('superfan-legend-dot');
+  if (legendDot) legendDot.style.color = currentArtist.color || '#ff6b35';
+
+  // Verified fan hero stats
+  const totalFans = insights.behaviors.total_fans || 0;
+  document.getElementById('verified-count').textContent = totalFans;
+  document.getElementById('proven-stat').textContent = totalFans;
+
+  // Try to get streaming numbers for comparison
+  try {
+    const spResp = await fetch('/spotify-data.json');
+    const spAll = await spResp.json();
+    const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+    const sp = spAll[slug];
+    if (sp && sp.top_countries && sp.top_countries.length > 0) {
+      // Use actual monthly listeners if available, otherwise sum countries
+      const totalListeners = sp.monthly_listeners || sp.top_countries.reduce((s, c) => s + c.listeners, 0);
+      document.getElementById('streaming-stat').textContent = totalListeners > 1000000 ? (totalListeners / 1000000).toFixed(1) + 'M' : (totalListeners / 1000).toFixed(0) + 'K';
+      const convPct = totalListeners > 0 ? ((totalFans / totalListeners) * 100) : 0;
+      document.getElementById('conversion-stat').textContent = convPct < 0.01 ? '<0.01%' : convPct < 1 ? convPct.toFixed(3) + '%' : convPct.toFixed(1) + '%';
+    }
+  } catch (e) {}
+
+  // Quick stats for overview
+  const avgScore = allFans.length > 0 ? Math.round(allFans.reduce((sum, f) => sum + parseInt(f.score || 0), 0) / allFans.length) : 0;
+  const topCityName = insights.cities.length > 0 ? insights.cities[0].city : '—';
+  const topPlatform = insights.platforms.length > 0 ? insights.platforms[0].platform : '—';
+  document.getElementById('insight-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${totalFans}</div><div class="stat-label">Total Fans</div></div>
+    <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-label">Avg Score</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:18px">${topCityName}</div><div class="stat-label">Top City</div></div>
+    <div class="stat-box"><div class="stat-num" style="font-size:18px;text-transform:capitalize">${topPlatform}</div><div class="stat-label">Top Platform</div></div>
+  `;
 
   // Score tiers — donut chart
   const tierMap = { casual: 0, engaged: 0, super: 0, evangelist: 0 };
@@ -1707,6 +2412,59 @@ async function loadInsights() {
   // Fix map rendering after tab switch
   setTimeout(() => map.invalidateSize(), 200);
 
+  // Spotify overlay layer for fan map
+  window._spotifyLayerVisible = false;
+  window._spotifyLayer = L.layerGroup();
+  window._fanMapRef = map;
+  window._fanMapBounds = bounds;
+
+  // Check if spotify data exists for this artist
+  try {
+    const resp = await fetch('/spotify-data.json');
+    const allSpotify = await resp.json();
+    const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+    const sd = allSpotify[slug];
+    if (sd && sd.top_cities) {
+      document.getElementById('spotify-toggle').style.display = 'block';
+      const maxL = Math.max(...sd.top_cities.map(c => c.listeners));
+      for (const c of sd.top_cities) {
+        const rad = Math.max(4, Math.min(18, 4 + (c.listeners / maxL) * 14));
+        const marker = L.circleMarker([c.lat, c.lon], {
+          radius: rad, fillColor: '#1DB954', color: '#1DB954', weight: 1, opacity: 0.7, fillOpacity: 0.25
+        }).bindPopup(`<b>${c.city}</b><br>${c.listeners.toLocaleString()} Spotify listeners`);
+        window._spotifyLayer.addLayer(marker);
+      }
+    } else {
+      document.getElementById('spotify-toggle').style.display = 'none';
+    }
+  } catch (e) {
+    document.getElementById('spotify-toggle').style.display = 'none';
+  }
+
+  // YouTube overlay layer for fan map
+  window._youtubeLayerVisible = false;
+  window._youtubeLayer = L.layerGroup();
+  const ytSlug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+  try {
+    const ytResp = await fetch(`/youtube-${ytSlug}.json`);
+    if (ytResp.ok) {
+      const ytData = await ytResp.json();
+      if (ytData.top_cities && ytData.top_cities.length > 0) {
+        document.getElementById('youtube-toggle').style.display = 'block';
+        const maxYtV = Math.max(...ytData.top_cities.map(c => c.views));
+        for (const c of ytData.top_cities) {
+          const rad = Math.max(5, Math.min(20, 5 + (c.views / maxYtV) * 15));
+          const marker = L.circleMarker([c.lat, c.lon], {
+            radius: rad, fillColor: '#FF0000', color: '#FF0000', weight: 1, opacity: 0.7, fillOpacity: 0.25
+          }).bindPopup(`<b>${c.city}</b><br>${(c.views / 1000000).toFixed(1)}M YouTube views`);
+          window._youtubeLayer.addLayer(marker);
+        }
+      }
+    }
+  } catch (e) {
+    document.getElementById('youtube-toggle').style.display = 'none';
+  }
+
   // City bars
   const maxCity = Math.max(...insights.cities.map(c => parseInt(c.count)), 1);
   document.getElementById('city-bars').innerHTML = insights.cities.length === 0
@@ -1777,8 +2535,14 @@ async function loadSpotifyInsights(insights, cityCoords) {
   } catch (e) {}
 
   const section = document.getElementById('spotify-section');
-  if (!spotifyData) { section.style.display = 'none'; return; }
+  const noData = document.getElementById('no-spotify-data');
+  if (!spotifyData) {
+    section.style.display = 'none';
+    noData.style.display = 'block';
+    return;
+  }
   section.style.display = 'block';
+  noData.style.display = 'none';
 
   // --- Demographics: Gender donut ---
   const gender = spotifyData.demographics.gender;
@@ -1970,8 +2734,138 @@ async function loadSpotifyInsights(insights, cityCoords) {
     });
 
     renderTrendChart('streams');
+    window._reRenderSpotifyTrend = () => renderTrendChart(activeMetric);
   } catch (e) {
     console.error('Trend chart error:', e);
+  }
+
+  // Load YouTube data too
+  await loadYouTubeInsights(spotifyData);
+}
+
+async function loadYouTubeInsights(spotifyData) {
+  if (!currentArtist) return;
+  const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+
+  let ytData;
+  try {
+    const resp = await fetch(`/youtube-${slug}.json`);
+    if (!resp.ok) throw new Error('not found');
+    ytData = await resp.json();
+  } catch (e) {}
+
+  const section = document.getElementById('youtube-section');
+  const noData = document.getElementById('no-youtube-data');
+  if (!ytData) {
+    section.style.display = 'none';
+    noData.style.display = 'block';
+    return;
+  }
+  section.style.display = 'block';
+  noData.style.display = 'none';
+
+  // --- Monthly Views Trend ---
+  function renderYtTrend() {
+  try {
+    const trend = ytData.monthly_trend;
+    const canvas = document.getElementById('yt-trend-chart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * dpr;
+    canvas.height = 160 * dpr;
+    ctx.scale(dpr, dpr);
+    const w = canvas.offsetWidth, h = 160;
+    const values = trend.map(t => t.views);
+    const maxV = Math.max(...values);
+    const minV = Math.min(...values);
+    const range = maxV - minV || 1;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.beginPath();
+    ctx.strokeStyle = '#FF0000';
+    ctx.lineWidth = 1.5;
+    values.forEach((v, i) => {
+      const x = (i / (values.length - 1)) * w;
+      const y = h - 10 - ((v - minV) / range) * (h - 20);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+    ctx.fillStyle = '#FF000015';
+    ctx.fill();
+
+    document.getElementById('yt-trend-start').textContent = trend[0].date;
+    document.getElementById('yt-trend-end').textContent = trend[trend.length - 1].date;
+
+    const latest = values[values.length - 1];
+    const prev = values[Math.max(0, values.length - 13)];
+    const change = ((latest - prev) / prev * 100).toFixed(1);
+    const totalViews = values.reduce((a, b) => a + b, 0);
+    document.getElementById('yt-trend-stats').innerHTML = `
+      <div style="font-size:12px"><span style="color:var(--text2)">Latest month:</span> <span style="font-weight:700;color:#FF0000">${(latest / 1000000).toFixed(1)}M</span></div>
+      <div style="font-size:12px"><span style="color:var(--text2)">YoY change:</span> <span style="font-weight:700;color:${parseFloat(change) >= 0 ? '#4ade80' : '#f87171'}">${change > 0 ? '+' : ''}${change}%</span></div>
+      <div style="font-size:12px"><span style="color:var(--text2)">Peak month:</span> <span style="font-weight:700">${(maxV / 1000000).toFixed(1)}M</span></div>
+    `;
+  } catch (e) { console.error('YT trend error:', e); }
+  }
+  renderYtTrend();
+  window._reRenderYtTrend = renderYtTrend;
+
+  // --- Top Countries ---
+  const maxYtViews = Math.max(...ytData.top_countries.map(c => c.alltime_views));
+  document.getElementById('yt-country-bars').innerHTML = ytData.top_countries.map(c => {
+    const recentPct = c.alltime_views > 0 ? (c.recent_views / c.alltime_views * 100) : 0;
+    return `<div class="bar-row">
+      <div class="bar-label" style="width:90px">${c.country}</div>
+      <div class="bar-track" style="position:relative">
+        <div class="bar-fill" style="width:${c.alltime_views / maxYtViews * 100}%;background:#444"></div>
+        <div style="position:absolute;top:0;left:0;height:100%;width:${c.alltime_views / maxYtViews * recentPct}%;background:#FF0000;border-radius:6px;opacity:0.8"></div>
+      </div>
+      <div class="bar-val">${(c.alltime_views / 1000000).toFixed(0)}M</div>
+    </div>`;
+  }).join('');
+
+  // --- Platform Comparison (YouTube vs Spotify) ---
+  const compareEl = document.getElementById('platform-compare');
+  if (spotifyData && spotifyData.top_countries) {
+    const spotifyRank = {};
+    spotifyData.top_countries.forEach((c, i) => { spotifyRank[c.country] = { rank: i + 1, listeners: c.listeners }; });
+
+    const ytCountryNames = {};
+    ytData.top_countries.forEach(c => { ytCountryNames[c.country] = c; });
+
+    // Find countries in both
+    const comparison = ytData.top_countries.slice(0, 15).map((c, i) => {
+      const sp = spotifyRank[c.country];
+      return {
+        country: c.country,
+        ytRank: i + 1,
+        ytViews: c.alltime_views,
+        spRank: sp ? sp.rank : null,
+        spListeners: sp ? sp.listeners : null
+      };
+    });
+
+    compareEl.innerHTML = `
+      <div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600">
+        <div style="flex:1">Country</div>
+        <div style="width:60px;text-align:center"><span style="color:#FF0000">▶</span> YT</div>
+        <div style="width:60px;text-align:center"><span style="color:#1DB954">●</span> Spotify</div>
+        <div style="width:50px;text-align:center">Gap</div>
+      </div>
+    ` + comparison.map(c => {
+      const gap = c.spRank ? c.spRank - c.ytRank : null;
+      const gapColor = gap === null ? '#666' : gap > 2 ? '#f87171' : gap < -2 ? '#4ade80' : 'var(--text2)';
+      const gapText = gap === null ? '—' : gap > 0 ? `+${gap}` : `${gap}`;
+      return `<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <div style="flex:1;font-weight:600">${c.country}</div>
+        <div style="width:60px;text-align:center;color:#FF0000;font-weight:700">#${c.ytRank}</div>
+        <div style="width:60px;text-align:center;color:#1DB954;font-weight:700">${c.spRank ? '#' + c.spRank : '—'}</div>
+        <div style="width:50px;text-align:center;color:${gapColor};font-weight:700;font-size:12px">${gapText}</div>
+      </div>`;
+    }).join('');
+  } else {
+    compareEl.innerHTML = '<div style="color:var(--text2);font-size:13px">Add Spotify data to compare platforms</div>';
   }
 }
 
