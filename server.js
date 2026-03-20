@@ -435,6 +435,33 @@ app.post('/api/import-brothel-fans', requireAuth, async (req, res) => {
   }
 });
 
+// ---------- BULK UPDATE FAN NOTES ----------
+
+app.post('/api/update-fan-notes', requireAuth, async (req, res) => {
+  try {
+    const updates = req.body.updates || [];
+    let count = 0;
+    for (const u of updates) {
+      const handle = (u.handle || '').toLowerCase().trim();
+      if (!handle) continue;
+      const where = u.artist_id
+        ? 'handle = $1 AND platform = $2 AND artist_id = $3'
+        : 'handle = $1 AND platform = $2';
+      const params = u.artist_id
+        ? [handle, u.platform || 'instagram', u.artist_id]
+        : [handle, u.platform || 'instagram'];
+      const result = await pool.query(
+        `UPDATE fans SET notes = $${params.length + 1} WHERE ${where}`,
+        [...params, u.notes]
+      );
+      if (result.rowCount > 0) count++;
+    }
+    res.json({ success: true, updated: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------- IMPORT SOUNDCLOUD TOP FANS ----------
 
 app.post('/api/import-soundcloud-fans', requireAuth, async (req, res) => {
