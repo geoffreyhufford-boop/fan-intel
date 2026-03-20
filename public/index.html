@@ -2334,6 +2334,21 @@ async function loadInsights() {
     });
   }
 
+  // Hide/show SoundCloud tab based on artist
+  const scTabBtn = document.querySelector('[data-social="social-soundcloud"]');
+  try {
+    const scCheck = await fetch('/soundcloud-data.json');
+    if (scCheck.ok) {
+      const scCheckData = await scCheck.json();
+      const slug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+      if (scTabBtn) scTabBtn.style.display = scCheckData.artist === slug ? 'flex' : 'none';
+    } else {
+      if (scTabBtn) scTabBtn.style.display = 'none';
+    }
+  } catch (e) {
+    if (scTabBtn) scTabBtn.style.display = 'none';
+  }
+
   // Update superfan legend dot color
   const legendDot = document.getElementById('superfan-legend-dot');
   if (legendDot) legendDot.style.color = currentArtist.color || '#ff6b35';
@@ -2583,7 +2598,8 @@ async function loadInsights() {
     const scResp = await fetch('/soundcloud-geo-stats.json');
     if (scResp.ok) {
       const scGeo = await scResp.json();
-      if (scGeo.top_cities && scGeo.top_cities.length > 0) {
+      const scSlug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
+      if (scGeo.top_cities && scGeo.top_cities.length > 0 && scGeo.artist === scSlug) {
         document.getElementById('soundcloud-toggle').style.display = 'block';
         const maxScP = Math.max(...scGeo.top_cities.map(c => c.plays));
         for (const c of scGeo.top_cities) {
@@ -2977,11 +2993,12 @@ async function loadComparePanel(spotifyData, ytData) {
 
   // Load SoundCloud geo data for comparison
   let scCountryRank = {};
+  const compareSlug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
   try {
     const scGeoResp = await fetch('/soundcloud-geo-stats.json');
     if (scGeoResp.ok) {
       const scGeo = await scGeoResp.json();
-      if (scGeo.top_countries) {
+      if (scGeo.top_countries && scGeo.artist === compareSlug) {
         const scNameMap = {
           'United States': 'United States', 'Russia': 'Russia', 'Russian Federation': 'Russia',
           'Canada': 'Canada', 'United Kingdom': 'United Kingdom', 'Germany': 'Germany',
@@ -3081,6 +3098,7 @@ async function loadSoundCloudInsights() {
   const noData = document.getElementById('no-soundcloud-data');
 
   let scData = null, scFollowers = null, scEngagers = null, scGeoStats = null, scEngagedFans = null;
+  const scArtistSlug = currentArtist.slug || currentArtist.name.toLowerCase().replace(/\s+/g, '-');
   try {
     const [dataResp, followersResp, engagersResp, geoResp, engagedResp] = await Promise.all([
       fetch('/soundcloud-data.json').catch(() => null),
@@ -3089,10 +3107,10 @@ async function loadSoundCloudInsights() {
       fetch('/soundcloud-geo-stats.json').catch(() => null),
       fetch('/soundcloud-engaged-fans.json').catch(() => null)
     ]);
-    if (dataResp && dataResp.ok) scData = await dataResp.json();
-    if (followersResp && followersResp.ok) scFollowers = await followersResp.json();
+    if (dataResp && dataResp.ok) { const d = await dataResp.json(); if (d.artist === scArtistSlug) scData = d; }
+    if (followersResp && followersResp.ok) { const d = await followersResp.json(); if (d.artist === scArtistSlug) scFollowers = d; }
     if (engagersResp && engagersResp.ok) scEngagers = await engagersResp.json();
-    if (geoResp && geoResp.ok) scGeoStats = await geoResp.json();
+    if (geoResp && geoResp.ok) { const d = await geoResp.json(); if (d.artist === scArtistSlug) scGeoStats = d; }
     if (engagedResp && engagedResp.ok) scEngagedFans = await engagedResp.json();
   } catch (e) {
     console.error('SoundCloud fetch error:', e);
