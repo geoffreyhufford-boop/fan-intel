@@ -2893,13 +2893,18 @@ async function loadYouTubeInsights(spotifyData) {
 
   const section = document.getElementById('youtube-section');
   const noData = document.getElementById('no-youtube-data');
+  const ytTabBtn = document.querySelector('[data-social="social-youtube"]');
   if (!ytData) {
     section.style.display = 'none';
-    noData.style.display = 'block';
+    noData.style.display = 'none';
+    if (ytTabBtn) ytTabBtn.style.display = 'none';
+    // Still run compare with just Spotify + SoundCloud
+    await loadComparePanel(spotifyData, null);
     return;
   }
   section.style.display = 'block';
   noData.style.display = 'none';
+  if (ytTabBtn) ytTabBtn.style.display = 'flex';
 
   // --- Monthly Views Trend ---
   function renderYtTrend() {
@@ -2962,8 +2967,13 @@ async function loadYouTubeInsights(spotifyData) {
     </div>`;
   }).join('');
 
-  // --- Platform Comparison (YouTube vs Spotify vs SoundCloud) ---
+  // --- Platform Comparison ---
+  await loadComparePanel(spotifyData, ytData);
+}
+
+async function loadComparePanel(spotifyData, ytData) {
   const compareEl = document.getElementById('platform-compare');
+  const compareTabBtn = document.querySelector('[data-social="social-compare"]');
 
   // Load SoundCloud geo data for comparison
   let scCountryRank = {};
@@ -2972,7 +2982,6 @@ async function loadYouTubeInsights(spotifyData) {
     if (scGeoResp.ok) {
       const scGeo = await scGeoResp.json();
       if (scGeo.top_countries) {
-        // Normalize country names to match YouTube/Spotify naming
         const scNameMap = {
           'United States': 'United States', 'Russia': 'Russia', 'Russian Federation': 'Russia',
           'Canada': 'Canada', 'United Kingdom': 'United Kingdom', 'Germany': 'Germany',
@@ -2994,54 +3003,75 @@ async function loadYouTubeInsights(spotifyData) {
   } catch (e) {}
 
   const hasSC = Object.keys(scCountryRank).length > 0;
+  const hasYT = ytData && ytData.top_countries && ytData.top_countries.length > 0;
+  const hasSp = spotifyData && spotifyData.top_countries && spotifyData.top_countries.length > 0;
 
-  if ((spotifyData && spotifyData.top_countries) || hasSC) {
-    const spotifyRank = {};
-    if (spotifyData && spotifyData.top_countries) {
-      spotifyData.top_countries.forEach((c, i) => { spotifyRank[c.country] = { rank: i + 1, listeners: c.listeners }; });
-    }
-
-    // Build unified country list from YT top 15
-    const comparison = ytData.top_countries.slice(0, 15).map((c, i) => {
-      const sp = spotifyRank[c.country];
-      const sc = scCountryRank[c.country];
-      return {
-        country: c.country,
-        ytRank: i + 1,
-        ytViews: c.alltime_views,
-        spRank: sp ? sp.rank : null,
-        spListeners: sp ? sp.listeners : null,
-        scRank: sc ? sc.rank : null,
-        scPlays: sc ? sc.plays : null
-      };
-    });
-
-    const hasSp = Object.keys(spotifyRank).length > 0;
-
-    compareEl.innerHTML = `
-      <div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600">
-        <div style="flex:1">Country</div>
-        <div style="width:50px;text-align:center"><span style="color:#FF0000">▶</span> YT</div>
-        ${hasSp ? '<div style="width:50px;text-align:center"><span style="color:#1DB954">●</span> Sp</div>' : ''}
-        ${hasSC ? '<div style="width:50px;text-align:center"><span style="color:#FF5500">●</span> SC</div>' : ''}
-        <div style="width:40px;text-align:center;font-size:10px">Spread</div>
-      </div>
-    ` + comparison.map(c => {
-      const ranks = [c.ytRank, c.spRank, c.scRank].filter(r => r !== null);
-      const spread = ranks.length > 1 ? Math.max(...ranks) - Math.min(...ranks) : null;
-      const spreadColor = spread === null ? '#666' : spread > 5 ? '#f87171' : spread < 3 ? '#4ade80' : 'var(--text2)';
-      const spreadText = spread === null ? '—' : `±${spread}`;
-      return `<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
-        <div style="flex:1;font-weight:600">${c.country}</div>
-        <div style="width:50px;text-align:center;color:#FF0000;font-weight:700">#${c.ytRank}</div>
-        ${hasSp ? `<div style="width:50px;text-align:center;color:#1DB954;font-weight:700">${c.spRank ? '#' + c.spRank : '—'}</div>` : ''}
-        ${hasSC ? `<div style="width:50px;text-align:center;color:#FF5500;font-weight:700">${c.scRank ? '#' + c.scRank : '—'}</div>` : ''}
-        <div style="width:40px;text-align:center;color:${spreadColor};font-weight:700;font-size:11px">${spreadText}</div>
-      </div>`;
-    }).join('');
-  } else {
-    compareEl.innerHTML = '<div style="color:var(--text2);font-size:13px">Add Spotify or SoundCloud data to compare platforms</div>';
+  // Need at least 2 platforms to compare
+  const platformCount = (hasYT ? 1 : 0) + (hasSp ? 1 : 0) + (hasSC ? 1 : 0);
+  if (platformCount < 2) {
+    if (compareTabBtn) compareTabBtn.style.display = 'none';
+    compareEl.innerHTML = '<div style="color:var(--text2);font-size:13px">Need data from at least 2 platforms to compare</div>';
+    return;
   }
+  if (compareTabBtn) compareTabBtn.style.display = 'flex';
+
+  const spotifyRank = {};
+  if (hasSp) {
+    spotifyData.top_countries.forEach((c, i) => { spotifyRank[c.country] = { rank: i + 1, listeners: c.listeners }; });
+  }
+
+  // Build base country list from whichever platform has data (prefer SC > YT > Spotify as base)
+  let baseCountries;
+  if (hasSC) {
+    // Use SC as base since it has the most granular data
+    const scGeoResp2 = await fetch('/soundcloud-geo-stats.json');
+    const scGeo2 = await scGeoResp2.json();
+    baseCountries = scGeo2.top_countries.slice(0, 15).map((c, i) => c.country);
+  } else if (hasYT) {
+    baseCountries = ytData.top_countries.slice(0, 15).map(c => c.country);
+  } else {
+    baseCountries = spotifyData.top_countries.slice(0, 15).map(c => c.country);
+  }
+
+  const ytRank = {};
+  if (hasYT) {
+    ytData.top_countries.forEach((c, i) => { ytRank[c.country] = { rank: i + 1, views: c.alltime_views }; });
+  }
+
+  const comparison = baseCountries.map((country, i) => {
+    const sp = spotifyRank[country];
+    const sc = scCountryRank[country];
+    const yt = ytRank[country];
+    return {
+      country,
+      baseRank: i + 1,
+      ytRank: yt ? yt.rank : null,
+      spRank: sp ? sp.rank : null,
+      scRank: sc ? sc.rank : null
+    };
+  });
+
+  compareEl.innerHTML = `
+    <div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600">
+      <div style="flex:1">Country</div>
+      ${hasYT ? '<div style="width:50px;text-align:center"><span style="color:#FF0000">▶</span> YT</div>' : ''}
+      ${hasSp ? '<div style="width:50px;text-align:center"><span style="color:#1DB954">●</span> Sp</div>' : ''}
+      ${hasSC ? '<div style="width:50px;text-align:center"><span style="color:#FF5500">●</span> SC</div>' : ''}
+      <div style="width:40px;text-align:center;font-size:10px">Spread</div>
+    </div>
+  ` + comparison.map(c => {
+    const ranks = [c.ytRank, c.spRank, c.scRank].filter(r => r !== null);
+    const spread = ranks.length > 1 ? Math.max(...ranks) - Math.min(...ranks) : null;
+    const spreadColor = spread === null ? '#666' : spread > 5 ? '#f87171' : spread < 3 ? '#4ade80' : 'var(--text2)';
+    const spreadText = spread === null ? '—' : `±${spread}`;
+    return `<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <div style="flex:1;font-weight:600">${c.country}</div>
+      ${hasYT ? `<div style="width:50px;text-align:center;color:#FF0000;font-weight:700">${c.ytRank ? '#' + c.ytRank : '—'}</div>` : ''}
+      ${hasSp ? `<div style="width:50px;text-align:center;color:#1DB954;font-weight:700">${c.spRank ? '#' + c.spRank : '—'}</div>` : ''}
+      ${hasSC ? `<div style="width:50px;text-align:center;color:#FF5500;font-weight:700">${c.scRank ? '#' + c.scRank : '—'}</div>` : ''}
+      <div style="width:40px;text-align:center;color:${spreadColor};font-weight:700;font-size:11px">${spreadText}</div>
+    </div>`;
+  }).join('');
 }
 
 // ----- SOUNDCLOUD DATA -----
