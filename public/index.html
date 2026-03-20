@@ -1180,12 +1180,16 @@
             <div id="youtube-toggle" style="display:none;cursor:pointer;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid #FF0000;color:#FF0000;background:transparent;transition:all 0.15s" onclick="toggleYouTubeLayer()">
               YouTube
             </div>
+            <div id="soundcloud-toggle" style="display:none;cursor:pointer;padding:5px 10px;border-radius:16px;font-size:11px;font-weight:600;border:1px solid #FF5500;color:#FF5500;background:transparent;transition:all 0.15s" onclick="toggleSoundCloudLayer()">
+              SoundCloud
+            </div>
           </div>
         </div>
         <div id="fan-map-legend" style="font-size:11px;color:var(--text2);margin-bottom:8px">
           <span id="fan-map-legend-accent" style="color:var(--accent)">●</span> Superfans
           <span id="fan-map-legend-spotify" style="display:none"> &nbsp; <span style="color:#1DB954">●</span> Spotify</span>
           <span id="fan-map-legend-youtube" style="display:none"> &nbsp; <span style="color:#FF0000">●</span> YouTube</span>
+          <span id="fan-map-legend-soundcloud" style="display:none"> &nbsp; <span style="color:#FF5500">●</span> SoundCloud</span>
         </div>
         <div id="fan-map" style="width:100%;border-radius:10px;overflow:hidden"></div>
       </div>
@@ -2251,6 +2255,30 @@ function toggleYouTubeLayer() {
   }
 }
 
+function toggleSoundCloudLayer() {
+  const btn = document.getElementById('soundcloud-toggle');
+  const legend = document.getElementById('fan-map-legend-soundcloud');
+  if (window._soundcloudLayerVisible) {
+    window._fanMapRef.removeLayer(window._soundcloudLayer);
+    window._soundcloudLayerVisible = false;
+    btn.textContent = 'SoundCloud';
+    btn.style.background = 'transparent';
+    btn.style.color = '#FF5500';
+    legend.style.display = 'none';
+    if (window._fanMapBounds.length > 1) {
+      window._fanMapRef.fitBounds(window._fanMapBounds, { padding: [30, 30], maxZoom: 6 });
+    }
+  } else {
+    window._fanMapRef.addLayer(window._soundcloudLayer);
+    window._soundcloudLayerVisible = true;
+    btn.textContent = 'SoundCloud ✓';
+    btn.style.background = '#FF550022';
+    btn.style.color = '#FF5500';
+    legend.style.display = 'inline';
+    window._fanMapRef.setView([20, 0], 2);
+  }
+}
+
 async function loadInsights() {
   if (!currentArtist) return;
   const artistParam = `?artist_id=${currentArtist.id}`;
@@ -2527,6 +2555,51 @@ async function loadInsights() {
     }
   } catch (e) {
     document.getElementById('youtube-toggle').style.display = 'none';
+  }
+
+  // SoundCloud overlay layer for fan map
+  window._soundcloudLayerVisible = false;
+  window._soundcloudLayer = L.layerGroup();
+  const scCityCoords = {
+    'los angeles': [34.05, -118.24], 'moscow': [55.76, 37.62], 'chicago': [41.88, -87.63],
+    'denver': [39.74, -104.99], 'houston': [29.76, -95.37], 'new york': [40.71, -74.01],
+    'brooklyn': [40.65, -73.95], 'dallas': [32.78, -96.80], 'toronto': [43.65, -79.38],
+    'saint petersburg': [59.93, 30.32], 'seattle': [47.61, -122.33], 'las vegas': [36.17, -115.14],
+    'paris': [48.86, 2.35], 'orlando': [28.54, -81.38], 'atlanta': [33.75, -84.39],
+    'london': [51.51, -0.13], 'philadelphia': [39.95, -75.17], 'warsaw': [52.23, 21.01],
+    'portland': [45.52, -122.68], 'phoenix': [33.45, -112.07], 'minneapolis': [44.98, -93.27],
+    'miami': [25.76, -80.19], 'san francisco': [37.77, -122.42], 'kiev': [50.45, 30.52],
+    'austin': [30.27, -97.74], 'sydney': [-33.87, 151.21], 'berlin': [52.52, 13.41],
+    'montreal': [45.50, -73.57], 'bronx': [40.84, -73.87], 'washington': [38.91, -77.04],
+    'charlotte': [35.23, -80.84], 'san diego': [32.72, -117.16], 'san jose': [37.34, -121.89],
+    'tampa': [27.95, -82.46], 'brisbane': [-27.47, 153.03], 'sacramento': [38.58, -121.49],
+    'minsk': [53.90, 27.57], 'auckland': [-36.85, 174.76], 'riga': [56.95, 24.11],
+    'san antonio': [29.42, -98.49], 'seoul': [37.57, 126.98], 'melbourne': [-37.81, 144.96],
+    'oakland': [37.80, -122.27], 'vancouver': [49.28, -123.12], 'detroit': [42.33, -83.05],
+    'calgary': [51.05, -114.07], 'st petersburg': [27.77, -82.64], 'riverside': [33.95, -117.40],
+    'kyiv': [50.45, 30.52], 'amsterdam': [52.37, 4.90]
+  };
+  try {
+    const scResp = await fetch('/soundcloud-geo-stats.json');
+    if (scResp.ok) {
+      const scGeo = await scResp.json();
+      if (scGeo.top_cities && scGeo.top_cities.length > 0) {
+        document.getElementById('soundcloud-toggle').style.display = 'block';
+        const maxScP = Math.max(...scGeo.top_cities.map(c => c.plays));
+        for (const c of scGeo.top_cities) {
+          const key = c.city.toLowerCase();
+          const coords = scCityCoords[key];
+          if (!coords) continue;
+          const rad = Math.max(5, Math.min(22, 5 + (c.plays / maxScP) * 17));
+          const marker = L.circleMarker(coords, {
+            radius: rad, fillColor: '#FF5500', color: '#FF5500', weight: 1, opacity: 0.7, fillOpacity: 0.25
+          }).bindPopup(`<b>${c.city}</b><br>${c.plays.toLocaleString()} SoundCloud plays`);
+          window._soundcloudLayer.addLayer(marker);
+        }
+      }
+    }
+  } catch (e) {
+    document.getElementById('soundcloud-toggle').style.display = 'none';
   }
 
   // City bars
