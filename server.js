@@ -236,6 +236,7 @@ app.post('/api/reseed-xlsx', requireAuth, async (req, res) => {
     { handle: 'holy.misfit', platform: 'tiktok', real_name: null, city: 'Denver', fan_type: null, commented_repeatedly: true, shared_reposted: true, bought_merch: true, attended_show: true, attended_multiple: false, runs_fan_page: false, creates_content: false, frequent_dms: false, notes: 'doesnt follow me' },
     { handle: 'babyasian0891', platform: 'tiktok', real_name: null, city: 'Seattle', fan_type: null, commented_repeatedly: true, shared_reposted: true, bought_merch: true, attended_show: true, attended_multiple: false, runs_fan_page: false, creates_content: false, frequent_dms: false, notes: 'follows me' },
     { handle: 'brooklynmariesmith', platform: 'tiktok', real_name: 'Brooklyn Smith', city: 'Spokane', fan_type: null, commented_repeatedly: true, shared_reposted: true, bought_merch: true, attended_show: true, attended_multiple: false, runs_fan_page: false, creates_content: false, frequent_dms: false, notes: null },
+    { handle: 'artistanomaly_', platform: 'instagram', real_name: null, city: 'Omaha', fan_type: 'evangelist', commented_repeatedly: true, shared_reposted: true, bought_merch: true, attended_show: true, attended_multiple: true, runs_fan_page: false, creates_content: true, frequent_dms: true, notes: 'met at meet & greet, non-binary artist, crossover brothel fan, 725 followers' },
   ];
 
   try {
