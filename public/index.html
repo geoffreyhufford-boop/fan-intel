@@ -1208,6 +1208,9 @@
         <div class="social-plat-btn" data-social="social-youtube" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;white-space:nowrap">
           <span style="font-size:14px">▶</span> YouTube
         </div>
+        <div class="social-plat-btn" data-social="social-soundcloud" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;white-space:nowrap">
+          <span style="font-size:14px">☁</span> SoundCloud
+        </div>
         <div class="social-plat-btn" data-social="social-compare" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;white-space:nowrap">
           ⟷ Compare
         </div>
@@ -1296,6 +1299,51 @@
             <div style="font-size:32px;margin-bottom:12px;color:#FF0000">▶</div>
             <div style="font-size:15px;font-weight:600;margin-bottom:4px">No YouTube data yet</div>
             <div style="font-size:13px">Export from YouTube Studio to see view insights</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOUNDCLOUD SUB-PANEL -->
+      <div class="social-panel" id="social-soundcloud">
+        <div id="soundcloud-section" style="display:none">
+          <!-- Profile Overview -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Profile Overview</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap" id="sc-profile-stats"></div>
+          </div>
+
+          <!-- Top Tracks -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Tracks by Plays</div>
+            <div class="bar-chart" id="sc-top-tracks"></div>
+          </div>
+
+          <!-- Follower Geography -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Follower Geography</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Top cities from follower data</div>
+            <div class="bar-chart" id="sc-follower-cities"></div>
+          </div>
+
+          <!-- Top Engagers -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Engagers</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Fans who liked/reposted multiple tracks</div>
+            <div id="sc-engagers-table"></div>
+          </div>
+
+          <!-- Country Breakdown -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Countries</div>
+            <div class="bar-chart" id="sc-country-bars"></div>
+          </div>
+        </div>
+
+        <div id="no-soundcloud-data" style="display:none">
+          <div class="card" style="text-align:center;padding:40px 16px;color:var(--text2)">
+            <div style="font-size:32px;margin-bottom:12px;color:#FF5500">☁</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">No SoundCloud data yet</div>
+            <div style="font-size:13px">Add SoundCloud data files to see engagement insights</div>
           </div>
         </div>
       </div>
@@ -2218,7 +2266,7 @@ async function loadInsights() {
     window._insightTabsSetup = true;
 
     // Social platform sub-tabs
-    const socialColors = { 'social-spotify': '#1DB954', 'social-youtube': '#FF0000', 'social-compare': 'var(--accent)' };
+    const socialColors = { 'social-spotify': '#1DB954', 'social-youtube': '#FF0000', 'social-soundcloud': '#FF5500', 'social-compare': 'var(--accent)' };
     document.querySelectorAll('.social-plat-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.social-plat-btn').forEach(b => {
@@ -2238,6 +2286,7 @@ async function loadInsights() {
           if (window._reRenderSpotifyTrend) setTimeout(window._reRenderSpotifyTrend, 50);
         }
         if (target === 'social-youtube' && window._reRenderYtTrend) setTimeout(window._reRenderYtTrend, 50);
+        if (target === 'social-soundcloud' && !window._soundcloudLoaded) loadSoundCloudInsights();
       });
     });
   }
@@ -2866,6 +2915,136 @@ async function loadYouTubeInsights(spotifyData) {
     }).join('');
   } else {
     compareEl.innerHTML = '<div style="color:var(--text2);font-size:13px">Add Spotify data to compare platforms</div>';
+  }
+}
+
+// ----- SOUNDCLOUD DATA -----
+async function loadSoundCloudInsights() {
+  if (!currentArtist) return;
+  const section = document.getElementById('soundcloud-section');
+  const noData = document.getElementById('no-soundcloud-data');
+
+  let scData = null, scFollowers = null, scEngagers = null;
+  try {
+    const [dataResp, followersResp, engagersResp] = await Promise.all([
+      fetch('/soundcloud-data.json').catch(() => null),
+      fetch('/soundcloud-followers.json').catch(() => null),
+      fetch('/soundcloud-engagers.json').catch(() => null)
+    ]);
+    if (dataResp && dataResp.ok) scData = await dataResp.json();
+    if (followersResp && followersResp.ok) scFollowers = await followersResp.json();
+    if (engagersResp && engagersResp.ok) scEngagers = await engagersResp.json();
+  } catch (e) {
+    console.error('SoundCloud fetch error:', e);
+  }
+
+  if (!scData && !scFollowers && !scEngagers) {
+    section.style.display = 'none';
+    noData.style.display = 'block';
+    return;
+  }
+  section.style.display = 'block';
+  noData.style.display = 'none';
+  window._soundcloudLoaded = true;
+
+  // --- Profile Overview ---
+  if (scData) {
+    const stats = [];
+    if (scData.followers != null) stats.push({ label: 'Followers', val: Number(scData.followers).toLocaleString() });
+    if (scData.tracks != null) stats.push({ label: 'Tracks', val: Number(scData.tracks).toLocaleString() });
+    if (scData.likes != null) stats.push({ label: 'Likes', val: Number(scData.likes).toLocaleString() });
+    if (scData.following != null) stats.push({ label: 'Following', val: Number(scData.following).toLocaleString() });
+    document.getElementById('sc-profile-stats').innerHTML = stats.map(s =>
+      `<div style="flex:1;min-width:80px;padding:12px;background:var(--surface2, rgba(255,85,0,0.06));border-radius:10px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:#FF5500">${s.val}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">${s.label}</div>
+      </div>`
+    ).join('');
+  }
+
+  // --- Top Tracks ---
+  if (scData && scData.top_tracks && scData.top_tracks.length > 0) {
+    const tracks = scData.top_tracks.slice(0, 10);
+    const maxPlays = Math.max(...tracks.map(t => t.plays || t.playback_count || 0));
+    document.getElementById('sc-top-tracks').innerHTML = tracks.map(t => {
+      const plays = t.plays || t.playback_count || 0;
+      const title = t.title || t.name || 'Untitled';
+      return `<div class="bar-row">
+        <div class="bar-label" style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${title}">${title}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${maxPlays > 0 ? plays / maxPlays * 100 : 0}%;background:#FF5500"></div></div>
+        <div class="bar-val">${Number(plays).toLocaleString()}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // --- Follower Geography (cities) ---
+  if (scFollowers && Array.isArray(scFollowers) && scFollowers.length > 0) {
+    // Aggregate cities: normalize case and trailing ", XX" state codes
+    const cityMap = {};
+    scFollowers.forEach(f => {
+      let city = (f.city || '').trim();
+      if (!city) return;
+      // Normalize: lowercase for key, pick most common casing for display
+      const key = city.toLowerCase().replace(/,\s*([\w]{2})$/, '').trim();
+      if (!cityMap[key]) cityMap[key] = { display: city, count: 0 };
+      cityMap[key].count++;
+    });
+    const cities = Object.values(cityMap).sort((a, b) => b.count - a.count).slice(0, 15);
+    const maxCityCount = cities[0].count;
+    document.getElementById('sc-follower-cities').innerHTML = cities.map(c =>
+      `<div class="bar-row">
+        <div class="bar-label">${c.display}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCityCount * 100}%;background:#FF5500"></div></div>
+        <div class="bar-val">${c.count}</div>
+      </div>`
+    ).join('');
+  }
+
+  // --- Top Engagers ---
+  if (scEngagers && Array.isArray(scEngagers) && scEngagers.length > 0) {
+    const engagers = scEngagers.slice(0, 20);
+    document.getElementById('sc-engagers-table').innerHTML = `
+      <div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600">
+        <div style="flex:1">Username</div>
+        <div style="width:55px;text-align:center">Tracks</div>
+        <div style="width:45px;text-align:center">Likes</div>
+        <div style="width:55px;text-align:center">Reposts</div>
+        <div style="width:80px;text-align:right">City</div>
+      </div>
+    ` + engagers.map(e => {
+      const tracks = e.tracks_engaged || e.tracks || 0;
+      const isSuper = tracks >= 4;
+      return `<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;${isSuper ? 'background:rgba(255,85,0,0.08);margin:0 -16px;padding-left:16px;padding-right:16px;border-radius:6px;' : ''}">
+        <div style="flex:1;font-weight:${isSuper ? '700' : '500'};color:${isSuper ? '#FF5500' : 'var(--text1)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.username || e.name || '—'}${isSuper ? ' ★' : ''}</div>
+        <div style="width:55px;text-align:center;font-weight:700">${tracks}</div>
+        <div style="width:45px;text-align:center">${e.likes || 0}</div>
+        <div style="width:55px;text-align:center">${e.reposts || 0}</div>
+        <div style="width:80px;text-align:right;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.city || '—'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // --- Country Breakdown (from engagers) ---
+  if (scEngagers && Array.isArray(scEngagers) && scEngagers.length > 0) {
+    const countryMap = {};
+    scEngagers.forEach(e => {
+      const country = (e.country || '').trim();
+      if (!country) return;
+      const key = country.toLowerCase();
+      if (!countryMap[key]) countryMap[key] = { display: country, count: 0 };
+      countryMap[key].count++;
+    });
+    const countries = Object.values(countryMap).sort((a, b) => b.count - a.count).slice(0, 15);
+    if (countries.length > 0) {
+      const maxCountry = countries[0].count;
+      document.getElementById('sc-country-bars').innerHTML = countries.map(c =>
+        `<div class="bar-row">
+          <div class="bar-label">${c.display}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCountry * 100}%;background:#FF5500"></div></div>
+          <div class="bar-val">${c.count}</div>
+        </div>`
+      ).join('');
+    }
   }
 }
 
