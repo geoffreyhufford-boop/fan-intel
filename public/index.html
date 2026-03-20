@@ -1318,24 +1318,39 @@
             <div class="bar-chart" id="sc-top-tracks"></div>
           </div>
 
-          <!-- Follower Geography -->
+          <!-- Top Cities (from Next Pro geo stats) -->
           <div class="card" style="margin-bottom:16px">
-            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Follower Geography</div>
-            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Top cities from follower data</div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Cities by Plays</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">SoundCloud Next Pro stats — actual play counts</div>
             <div class="bar-chart" id="sc-follower-cities"></div>
           </div>
 
-          <!-- Top Engagers -->
+          <!-- Top Countries (from Next Pro geo stats) -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Countries by Plays</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">SoundCloud Next Pro stats — top 20</div>
+            <div class="bar-chart" id="sc-country-bars"></div>
+          </div>
+
+          <!-- Tour City Overlap -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Tour City Overlap</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Tour cities with SoundCloud play data</div>
+            <div class="bar-chart" id="sc-tour-overlap"></div>
+          </div>
+
+          <!-- Top Engagers (original) -->
           <div class="card" style="margin-bottom:16px">
             <div style="font-size:15px;font-weight:700;margin-bottom:4px">Top Engagers</div>
             <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Fans who liked/reposted multiple tracks</div>
             <div id="sc-engagers-table"></div>
           </div>
 
-          <!-- Country Breakdown -->
+          <!-- Next Pro Engaged Fans -->
           <div class="card" style="margin-bottom:16px">
-            <div style="font-size:15px;font-weight:700;margin-bottom:12px">Top Countries</div>
-            <div class="bar-chart" id="sc-country-bars"></div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px">Next Pro Engaged Fans</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:12px" id="sc-engaged-fans-subtitle"></div>
+            <div id="sc-engaged-fans-table" style="overflow-x:auto"></div>
           </div>
         </div>
 
@@ -2924,21 +2939,25 @@ async function loadSoundCloudInsights() {
   const section = document.getElementById('soundcloud-section');
   const noData = document.getElementById('no-soundcloud-data');
 
-  let scData = null, scFollowers = null, scEngagers = null;
+  let scData = null, scFollowers = null, scEngagers = null, scGeoStats = null, scEngagedFans = null;
   try {
-    const [dataResp, followersResp, engagersResp] = await Promise.all([
+    const [dataResp, followersResp, engagersResp, geoResp, engagedResp] = await Promise.all([
       fetch('/soundcloud-data.json').catch(() => null),
       fetch('/soundcloud-followers.json').catch(() => null),
-      fetch('/soundcloud-engagers.json').catch(() => null)
+      fetch('/soundcloud-engagers.json').catch(() => null),
+      fetch('/soundcloud-geo-stats.json').catch(() => null),
+      fetch('/soundcloud-engaged-fans.json').catch(() => null)
     ]);
     if (dataResp && dataResp.ok) scData = await dataResp.json();
     if (followersResp && followersResp.ok) scFollowers = await followersResp.json();
     if (engagersResp && engagersResp.ok) scEngagers = await engagersResp.json();
+    if (geoResp && geoResp.ok) scGeoStats = await geoResp.json();
+    if (engagedResp && engagedResp.ok) scEngagedFans = await engagedResp.json();
   } catch (e) {
     console.error('SoundCloud fetch error:', e);
   }
 
-  if (!scData && !scFollowers && !scEngagers) {
+  if (!scData && !scFollowers && !scEngagers && !scGeoStats && !scEngagedFans) {
     section.style.display = 'none';
     noData.style.display = 'block';
     return;
@@ -2948,12 +2967,22 @@ async function loadSoundCloudInsights() {
   window._soundcloudLoaded = true;
 
   // --- Profile Overview ---
+  const stats = [];
   if (scData) {
-    const stats = [];
     if (scData.followers != null) stats.push({ label: 'Followers', val: Number(scData.followers).toLocaleString() });
     if (scData.tracks != null) stats.push({ label: 'Tracks', val: Number(scData.tracks).toLocaleString() });
     if (scData.likes != null) stats.push({ label: 'Likes', val: Number(scData.likes).toLocaleString() });
     if (scData.following != null) stats.push({ label: 'Following', val: Number(scData.following).toLocaleString() });
+  }
+  // Add total plays from geo stats (sum of country plays)
+  if (scGeoStats && scGeoStats.top_countries && scGeoStats.top_countries.length > 0) {
+    const totalPlays = scGeoStats.top_countries.reduce((sum, c) => sum + (c.plays || 0), 0);
+    stats.unshift({ label: 'Total Plays', val: Number(totalPlays).toLocaleString() });
+  }
+  if (scEngagedFans && scEngagedFans.total_engaged) {
+    stats.push({ label: 'Engaged Fans', val: Number(scEngagedFans.total_engaged).toLocaleString() });
+  }
+  if (stats.length > 0) {
     document.getElementById('sc-profile-stats').innerHTML = stats.map(s =>
       `<div style="flex:1;min-width:80px;padding:12px;background:var(--surface2, rgba(255,85,0,0.06));border-radius:10px;text-align:center">
         <div style="font-size:20px;font-weight:800;color:#FF5500">${s.val}</div>
@@ -2977,30 +3006,116 @@ async function loadSoundCloudInsights() {
     }).join('');
   }
 
-  // --- Follower Geography (cities) ---
-  if (scFollowers && Array.isArray(scFollowers) && scFollowers.length > 0) {
-    // Aggregate cities: normalize case and trailing ", XX" state codes
+  // --- Top Cities by Plays (from Next Pro geo stats, fallback to follower-derived) ---
+  if (scGeoStats && scGeoStats.top_cities && scGeoStats.top_cities.length > 0) {
+    const cities = scGeoStats.top_cities;
+    const maxCityPlays = cities[0].plays;
+    document.getElementById('sc-follower-cities').innerHTML = cities.map(c =>
+      `<div class="bar-row">
+        <div class="bar-label">${c.city}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${maxCityPlays > 0 ? c.plays / maxCityPlays * 100 : 0}%;background:#FF5500"></div></div>
+        <div class="bar-val">${Number(c.plays).toLocaleString()}</div>
+      </div>`
+    ).join('');
+  } else if (scFollowers && Array.isArray(scFollowers) && scFollowers.length > 0) {
+    // Fallback: aggregate cities from follower data
     const cityMap = {};
     scFollowers.forEach(f => {
       let city = (f.city || '').trim();
       if (!city) return;
-      // Normalize: lowercase for key, pick most common casing for display
       const key = city.toLowerCase().replace(/,\s*([\w]{2})$/, '').trim();
       if (!cityMap[key]) cityMap[key] = { display: city, count: 0 };
       cityMap[key].count++;
     });
     const cities = Object.values(cityMap).sort((a, b) => b.count - a.count).slice(0, 15);
-    const maxCityCount = cities[0].count;
-    document.getElementById('sc-follower-cities').innerHTML = cities.map(c =>
-      `<div class="bar-row">
-        <div class="bar-label">${c.display}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCityCount * 100}%;background:#FF5500"></div></div>
-        <div class="bar-val">${c.count}</div>
-      </div>`
-    ).join('');
+    if (cities.length > 0) {
+      const maxCityCount = cities[0].count;
+      document.getElementById('sc-follower-cities').innerHTML = cities.map(c =>
+        `<div class="bar-row">
+          <div class="bar-label">${c.display}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCityCount * 100}%;background:#FF5500"></div></div>
+          <div class="bar-val">${c.count}</div>
+        </div>`
+      ).join('');
+    }
   }
 
-  // --- Top Engagers ---
+  // --- Top Countries by Plays (from Next Pro geo stats, fallback to engager-derived) ---
+  if (scGeoStats && scGeoStats.top_countries && scGeoStats.top_countries.length > 0) {
+    const countries = scGeoStats.top_countries.slice(0, 20);
+    const maxCountryPlays = countries[0].plays;
+    document.getElementById('sc-country-bars').innerHTML = countries.map(c =>
+      `<div class="bar-row">
+        <div class="bar-label">${c.country}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${maxCountryPlays > 0 ? c.plays / maxCountryPlays * 100 : 0}%;background:#FF5500"></div></div>
+        <div class="bar-val">${Number(c.plays).toLocaleString()}</div>
+      </div>`
+    ).join('');
+  } else if (scEngagers && Array.isArray(scEngagers) && scEngagers.length > 0) {
+    const countryMap = {};
+    scEngagers.forEach(e => {
+      const country = (e.country || '').trim();
+      if (!country) return;
+      const key = country.toLowerCase();
+      if (!countryMap[key]) countryMap[key] = { display: country, count: 0 };
+      countryMap[key].count++;
+    });
+    const countries = Object.values(countryMap).sort((a, b) => b.count - a.count).slice(0, 15);
+    if (countries.length > 0) {
+      const maxCountry = countries[0].count;
+      document.getElementById('sc-country-bars').innerHTML = countries.map(c =>
+        `<div class="bar-row">
+          <div class="bar-label">${c.display}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCountry * 100}%;background:#FF5500"></div></div>
+          <div class="bar-val">${c.count}</div>
+        </div>`
+      ).join('');
+    }
+  }
+
+  // --- Tour City Overlap ---
+  if (scGeoStats && scGeoStats.top_cities && scGeoStats.top_cities.length > 0) {
+    const tourCities = ['Denver','Omaha','Minneapolis','Chicago','Detroit','Indianapolis','Louisville','Cincinnati','Columbus','Cleveland','Buffalo','Toronto','Montreal','Quebec City','Boston','Providence','New York','Allentown','Norwalk','Wilmington','Washington DC','Richmond','Charleston','Tampa','Fort Lauderdale','Orlando','Atlanta','Nashville','St. Louis','Kansas City','Oklahoma City','Dallas','Austin','Albuquerque','Tucson','Phoenix','Las Vegas','Salt Lake City','Santa Ana'];
+    // Build lookup: lowercase city -> {city, plays}
+    const scCityMap = {};
+    scGeoStats.top_cities.forEach(c => {
+      scCityMap[c.city.toLowerCase()] = c;
+    });
+    // Also map common variants
+    const aliases = { 'washington dc': ['washington'], 'new york': ['new york', 'brooklyn', 'bronx'], 'fort lauderdale': ['fort lauderdale'], 'st. louis': ['st. louis', 'saint louis'], 'salt lake city': ['salt lake city'], 'kansas city': ['kansas city'], 'oklahoma city': ['oklahoma city'], 'quebec city': ['quebec city', 'quebec'], 'santa ana': ['santa ana'] };
+    const overlaps = [];
+    tourCities.forEach(tc => {
+      const tcLower = tc.toLowerCase();
+      let totalPlays = 0;
+      let matched = false;
+      // Check aliases first
+      const aliasList = aliases[tcLower] || [tcLower];
+      aliasList.forEach(alias => {
+        if (scCityMap[alias]) {
+          totalPlays += scCityMap[alias].plays;
+          matched = true;
+        }
+      });
+      if (matched) overlaps.push({ city: tc, plays: totalPlays });
+    });
+    overlaps.sort((a, b) => b.plays - a.plays);
+    if (overlaps.length > 0) {
+      const maxOverlap = overlaps[0].plays;
+      document.getElementById('sc-tour-overlap').innerHTML =
+        `<div style="font-size:12px;color:var(--text2);margin-bottom:8px">${overlaps.length} of ${tourCities.length} tour cities found in SoundCloud data</div>` +
+        overlaps.map(c =>
+        `<div class="bar-row">
+          <div class="bar-label">${c.city}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c.plays / maxOverlap * 100}%;background:#FF5500"></div></div>
+          <div class="bar-val">${Number(c.plays).toLocaleString()}</div>
+        </div>`
+      ).join('');
+    } else {
+      document.getElementById('sc-tour-overlap').innerHTML = '<div style="font-size:13px;color:var(--text2)">No matching tour cities found in SoundCloud geo data</div>';
+    }
+  }
+
+  // --- Top Engagers (original engagers data) ---
   if (scEngagers && Array.isArray(scEngagers) && scEngagers.length > 0) {
     const engagers = scEngagers.slice(0, 20);
     document.getElementById('sc-engagers-table').innerHTML = `
@@ -3024,27 +3139,37 @@ async function loadSoundCloudInsights() {
     }).join('');
   }
 
-  // --- Country Breakdown (from engagers) ---
-  if (scEngagers && Array.isArray(scEngagers) && scEngagers.length > 0) {
-    const countryMap = {};
-    scEngagers.forEach(e => {
-      const country = (e.country || '').trim();
-      if (!country) return;
-      const key = country.toLowerCase();
-      if (!countryMap[key]) countryMap[key] = { display: country, count: 0 };
-      countryMap[key].count++;
-    });
-    const countries = Object.values(countryMap).sort((a, b) => b.count - a.count).slice(0, 15);
-    if (countries.length > 0) {
-      const maxCountry = countries[0].count;
-      document.getElementById('sc-country-bars').innerHTML = countries.map(c =>
-        `<div class="bar-row">
-          <div class="bar-label">${c.display}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${c.count / maxCountry * 100}%;background:#FF5500"></div></div>
-          <div class="bar-val">${c.count}</div>
-        </div>`
+  // --- Next Pro Engaged Fans ---
+  if (scEngagedFans && scEngagedFans.fans && scEngagedFans.fans.length > 0) {
+    const fans = scEngagedFans.fans;
+    const totalCount = scEngagedFans.total_engaged || fans.length;
+    document.getElementById('sc-engaged-fans-subtitle').textContent = `${Number(totalCount).toLocaleString()} engaged fans from SoundCloud Next Pro`;
+    // Show top 50 fans
+    const topFans = fans.slice(0, 50);
+    const badgeColors = { likes: '#FF5500', reposts: '#3B82F6', comments: '#22C55E' };
+    document.getElementById('sc-engaged-fans-table').innerHTML = `
+      <div style="display:flex;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);font-weight:600">
+        <div style="flex:1;min-width:120px">Username</div>
+        <div style="width:60px">Location</div>
+        <div style="width:70px;text-align:center">Badges</div>
+        <div style="width:65px;text-align:center">Followers</div>
+        <div style="width:30px;text-align:center">F/Y</div>
+      </div>
+    ` + topFans.map(f => {
+      const followers = f.followers || 0;
+      const isAmplifier = followers >= 100;
+      const badgeDots = (f.badges || []).map(b =>
+        `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${badgeColors[b] || '#999'};margin-right:3px" title="${b}"></span>`
       ).join('');
-    }
+      const followsYou = f.follows_you ? '<span style="color:#22C55E;font-weight:700;font-size:14px" title="Follows you">&#10003;</span>' : '';
+      return `<div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;${isAmplifier ? 'background:rgba(255,85,0,0.06);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:5px;' : ''}">
+        <div style="flex:1;min-width:120px;font-weight:${isAmplifier ? '700' : '500'};color:${isAmplifier ? '#FF5500' : 'var(--text1)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.username}">${f.username}${isAmplifier ? ' ★' : ''}</div>
+        <div style="width:60px;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.location || '—'}</div>
+        <div style="width:70px;text-align:center">${badgeDots}</div>
+        <div style="width:65px;text-align:center;font-size:12px;font-weight:${isAmplifier ? '700' : '400'};color:${isAmplifier ? '#FF5500' : 'var(--text1)'}">${followers > 0 ? Number(followers).toLocaleString() : '—'}</div>
+        <div style="width:30px;text-align:center">${followsYou}</div>
+      </div>`;
+    }).join('');
   }
 }
 
