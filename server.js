@@ -435,6 +435,83 @@ app.post('/api/import-brothel-fans', requireAuth, async (req, res) => {
   }
 });
 
+// ---------- IMPORT SOUNDCLOUD TOP FANS ----------
+
+app.post('/api/import-soundcloud-fans', requireAuth, async (req, res) => {
+  try {
+    const brothelResult = await pool.query(`SELECT id FROM artists WHERE slug = 'brothel'`);
+    if (brothelResult.rows.length === 0) return res.status(400).json({ error: 'Brothel artist not found' });
+    const artistId = brothelResult.rows[0].id;
+
+    // Get or create a SoundCloud import show
+    let showId;
+    const existing = await pool.query("SELECT id FROM shows WHERE venue = 'SoundCloud Import' AND artist_id = $1", [artistId]);
+    if (existing.rows.length > 0) {
+      showId = existing.rows[0].id;
+    } else {
+      const r = await pool.query("INSERT INTO shows (artist_id, date, city, venue, capacity) VALUES ($1, '2026-03-20', 'Online', 'SoundCloud Import', 0) RETURNING id", [artistId]);
+      showId = r.rows[0].id;
+    }
+
+    const fans = req.body.fans || [];
+    let count = 0;
+
+    for (const f of fans) {
+      const handle = (f.username || '').toLowerCase().trim();
+      if (!handle) continue;
+
+      const notes = [
+        `SC: ${f.tracks_engaged} tracks engaged, ${f.likes}L/${f.reposts}R`,
+        f.followers ? `${f.followers} followers` : null,
+        f.follows_brothel ? 'follows brothel' : null,
+        f.has_comments ? 'comments on tracks' : null,
+        f.city ? f.city : null
+      ].filter(Boolean).join(', ');
+
+      const fanRes = await pool.query(
+        `INSERT INTO fans (handle, platform, real_name, city, fan_type, notes, artist_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (handle, platform, artist_id) DO UPDATE SET
+           notes = COALESCE(EXCLUDED.notes, fans.notes),
+           city = COALESCE(EXCLUDED.city, fans.city)
+         RETURNING id`,
+        [handle, 'soundcloud', null, f.city || null, null, notes, artistId]
+      );
+
+      // Check if sighting already exists
+      const existingSighting = await pool.query(
+        'SELECT id FROM sightings WHERE fan_id = $1 AND show_id = $2',
+        [fanRes.rows[0].id, showId]
+      );
+
+      if (existingSighting.rows.length === 0) {
+        await pool.query(
+          `INSERT INTO sightings (fan_id, show_id, entered_by,
+            commented_repeatedly, shared_reposted, bought_merch,
+            attended_show, attended_multiple, runs_fan_page,
+            creates_content, frequent_dms, notes)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [fanRes.rows[0].id, showId, 'soundcloud-import',
+           f.has_comments || false,
+           f.reposts > 0,
+           false,
+           false,
+           false,
+           false,
+           false,
+           false,
+           notes]
+        );
+      }
+      count++;
+    }
+
+    res.json({ success: true, imported: count, artist: 'brothel' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------- SCREENSHOT SCAN ----------
 
 app.post('/api/scan-screenshot', requireAuth, upload.single('screenshot'), async (req, res) => {
