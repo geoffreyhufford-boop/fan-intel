@@ -84,6 +84,16 @@ async function initDB() {
     );
   `);
 
+  // City coordinates cache table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS city_coords (
+      city TEXT PRIMARY KEY,
+      lat DOUBLE PRECISION NOT NULL,
+      lng DOUBLE PRECISION NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
   // Seed default artists if none exist
   const { rows: artistRows } = await pool.query('SELECT COUNT(*) FROM artists');
   if (parseInt(artistRows[0].count) === 0) {
@@ -972,6 +982,55 @@ app.get('/api/insights', requireAuth, async (req, res) => {
   });
   } catch (err) {
     console.error('Insights error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- GEOCODING ----------
+
+// Returns cached city coordinates, geocoding any missing cities via Nominatim
+app.get('/api/city-coords', requireAuth, async (req, res) => {
+  try {
+    // Get all distinct cities from fans table
+    const { rows: cities } = await pool.query(`
+      SELECT DISTINCT LOWER(TRIM(city)) as city FROM fans
+      WHERE city IS NOT NULL AND LOWER(TRIM(city)) != 'unknown' AND LOWER(TRIM(city)) != 'unkniwn'
+    `);
+
+    // Get cached coords
+    const { rows: cached } = await pool.query('SELECT city, lat, lng FROM city_coords');
+    const cache = {};
+    for (const r of cached) cache[r.city] = [r.lat, r.lng];
+
+    // Find cities we need to geocode
+    const missing = cities.map(c => c.city).filter(c => !cache[c]);
+
+    // Geocode missing cities via Nominatim (free, no key needed)
+    for (const city of missing) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+        const response = await fetch(url, {
+          headers: { 'User-Agent': 'FanIntel/1.0 (fan tracking dashboard)' }
+        });
+        const data = await response.json();
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          await pool.query(
+            'INSERT INTO city_coords (city, lat, lng) VALUES ($1, $2, $3) ON CONFLICT (city) DO UPDATE SET lat = $2, lng = $3',
+            [city, lat, lng]
+          );
+          cache[city] = [lat, lng];
+        }
+        // Rate limit: Nominatim asks for 1 req/sec
+        await new Promise(r => setTimeout(r, 1100));
+      } catch (e) {
+        console.error(`Geocode failed for ${city}:`, e.message);
+      }
+    }
+
+    res.json(cache);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

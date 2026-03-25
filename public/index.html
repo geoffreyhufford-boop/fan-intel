@@ -2458,26 +2458,14 @@ async function loadInsights() {
     `<div class="beh-item"><span class="beh-pct">${Math.round(b.val / total * 100)}%</span>${b.label}</div>`
   ).join('');
 
-  // Fan map (Leaflet)
-  const cityCoords = {
-    'denver': [39.74, -104.99], 'denver / nyc': [39.74, -104.99], 'co': [39.55, -105.78],
-    'colorado': [39.55, -105.78], 'la': [34.05, -118.24], 'los angeles': [34.05, -118.24],
-    'nyc': [40.71, -74.01], 'new york': [40.71, -74.01], 'portland': [45.52, -122.68],
-    'seattle': [47.61, -122.33], 'austin, tx': [30.27, -97.74], 'austin': [30.27, -97.74],
-    'salt lake city': [40.76, -111.89], 'sacramento': [38.58, -121.49],
-    'madison, wi': [43.07, -89.40], 'madison': [43.07, -89.40],
-    'ct': [41.60, -72.70], 'san francisco': [37.77, -122.42],
-    'pnw': [46.60, -122.33], 'chicago': [41.88, -87.63],
-    'omaha': [41.26, -95.94], 'cleveland': [41.50, -81.69],
-    'san luis obispo': [35.28, -120.66], 'cincinnati': [39.10, -84.51],
-    'montana': [46.88, -110.36], 'ohio': [40.42, -82.91],
-    'iowa': [41.88, -93.10], 'iowa / los angeles': [41.88, -93.10],
-    'london, uk': [51.51, -0.13], 'boston': [42.36, -71.06],
-    'detroit': [42.33, -83.05], 'minneapolis': [44.98, -93.27],
-    'des moines': [41.59, -93.62], 'baltimore': [39.29, -76.61],
-    'mn': [44.98, -93.27], 'mexico city': [19.43, -99.13],
-    'spokane': [47.66, -117.43],
-  };
+  // Fan map (Leaflet) — coords auto-resolved from DB via /api/city-coords
+  let cityCoords = {};
+  try {
+    const coordsRes = await fetch('/api/city-coords', { headers: { 'x-pin': PIN } });
+    if (coordsRes.ok) cityCoords = await coordsRes.json();
+  } catch (e) {
+    console.warn('Failed to fetch city coords, map markers may be incomplete');
+  }
 
   const mapEl = document.getElementById('fan-map');
   mapEl.style.height = '280px';
