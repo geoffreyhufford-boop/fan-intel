@@ -1,99 +1,905 @@
 [
-  {"handle": "colinphotos1", "platform": "instagram", "real_name": null, "city": null, "context": "tagged brothel, concert photo"},
-  {"handle": "_0alara0_", "platform": "instagram", "real_name": null, "city": null, "context": "tagged brothel, concert dump at Summit Music Hall"},
-  {"handle": "afrika.photo", "platform": "instagram", "real_name": null, "city": "Sacramento", "context": "tagged brothel, concert photo 03/06/26"},
-  {"handle": "pineapple.madness_666", "platform": "instagram", "real_name": "Katie Berrie", "city": "Denver", "context": "tagged brothel at Summit Music Hall"},
-  {"handle": "nsn.media", "platform": "instagram", "real_name": null, "city": null, "context": "tagged brothel, media/content page"},
-  {"handle": "octosnowbunnie", "platform": "instagram", "real_name": "Ren", "city": null, "context": "profile page, fan"},
-  {"handle": "that_nerdy_mf", "platform": "instagram", "real_name": "the gabe", "city": null, "context": "profile page, followed by twofeetmusic"},
-  {"handle": "berighton", "platform": "instagram", "real_name": "Brighton", "city": null, "context": "artist profile, 4.4k followers"},
-  {"handle": "kiki_bacon", "platform": "instagram", "real_name": "Space Babe", "city": "PNW", "context": "profile page, age 29"},
-  {"handle": "strwbrykii", "platform": "instagram", "real_name": "Crystal", "city": null, "context": "profile page, music lover"},
-  {"handle": "_andydye", "platform": "instagram", "real_name": "Andy Dye", "city": null, "context": "profile page, YouTube creator"},
-  {"handle": "tonnmy.k", "platform": "instagram", "real_name": "Thomas", "city": null, "context": "profile page"},
-  {"handle": "ronin_unknown", "platform": "instagram", "real_name": "Ronin Unknown SLC", "city": "Salt Lake City", "context": "profile page, bike videos, 3.9k followers"},
-  {"handle": "lokiloti", "platform": "instagram", "real_name": "loki", "city": "LA", "context": "profile page, 17.1k followers, HEXXX out now"},
-  {"handle": "bella.nuce", "platform": "instagram", "real_name": "Bella Nuce", "city": "Denver / NYC", "context": "music+marketing+movement, 32.9k followers"},
-  {"handle": "kochaj_wave", "platform": "instagram", "real_name": "Ambeatz Adrian", "city": null, "context": "musician/band profile"},
-  {"handle": "aureliehab_", "platform": "instagram", "real_name": "Aurelie Habert", "city": null, "context": "artist, French filmmaker & drone pilot"},
-  {"handle": "grungyhotmess", "platform": "instagram", "real_name": "Rae", "city": "CO", "context": "personal blog, rave/concert content"},
-  {"handle": "basscapital.co", "platform": "instagram", "real_name": "Bass Capital Colorado", "city": "Colorado", "context": "music/event photography page"},
-  {"handle": "szczupakowsky", "platform": "instagram", "real_name": "Filantrop Pianista", "city": null, "context": "circus, 2.8k followers"},
-  {"handle": "ostroslup", "platform": "instagram", "real_name": "natalia", "city": null, "context": "profile page"},
-  {"handle": "tynaaaha", "platform": "instagram", "real_name": null, "city": "NYC", "context": "profile page"},
-  {"handle": "kiyo_nails", "platform": "instagram", "real_name": "KIYO", "city": null, "context": "nail artist, 22.4k followers"},
-  {"handle": "schaapjake", "platform": "instagram", "real_name": "Jake Schaap", "city": "Madison, WI", "context": "trap and wave DJ"},
-  {"handle": "whatisgoingon.420", "platform": "instagram", "real_name": null, "city": null, "context": "profile page"},
-  {"handle": "c8omusic", "platform": "instagram", "real_name": "c8o", "city": "London, UK", "context": "artist, 22.1k followers"},
-  {"handle": "rilee.not.reid", "platform": "instagram", "real_name": "Rilee Eliese King", "city": "Austin, TX", "context": "photographer, drone, 3.9k followers"},
-  {"handle": "kxnikxgex", "platform": "instagram", "real_name": "KXNIKXGEX", "city": null, "context": "profile page, 6.3k followers"},
-  {"handle": "asned_", "platform": "instagram", "real_name": null, "city": null, "context": "profile page"},
-  {"handle": "midnightbutterflyxx", "platform": "instagram", "real_name": "Kay Peplinski", "city": null, "context": "profile page, concert content"},
-  {"handle": "trevor.cooper1", "platform": "instagram", "real_name": "Trevor Cooper", "city": "CT", "context": "profile page, photography"},
-  {"handle": "vrbanwitch", "platform": "instagram", "real_name": null, "city": "Los Angeles", "context": "LA events, witch house/wave"},
-  {"handle": "joel__rgb", "platform": "instagram", "real_name": "Joel", "city": "San Francisco", "context": "artist and designer, 7.8k followers"},
-  {"handle": "msbelladonna34", "platform": "instagram", "real_name": "AlishaAngelina Belladonna Lopez", "city": null, "context": "photographer"},
-  {"handle": "hannia_nery", "platform": "instagram", "real_name": "Hannia Neri", "city": null, "context": "engineering student, concert content"},
-  {"handle": "all_live_shows", "platform": "instagram", "real_name": "ROLEX", "city": null, "context": "live show videos page"},
-  {"handle": "svndstorm", "platform": "instagram", "real_name": "Sander", "city": null, "context": "profile page, travel/concert content"},
-  {"handle": "fok.of", "platform": "instagram", "real_name": null, "city": null, "context": "dziary/tattoo, 4.3k followers"},
-  {"handle": "hexashade_", "platform": "instagram", "real_name": null, "city": null, "context": "she/her, profile page"},
-  {"handle": "mindysinadream", "platform": "instagram", "real_name": "Mindy Song", "city": null, "context": "artist, founder, 16.8k followers"},
-  {"handle": "bimyomusic", "platform": "instagram", "real_name": "Bimyo", "city": null, "context": "producer/DJ, wave/phonk/witchy trap"},
-  {"handle": "officialsbu_", "platform": "instagram", "real_name": "SBU", "city": "Iowa / Los Angeles", "context": "artist, 2.3k followers"},
-  {"handle": "ashesdown", "platform": "instagram", "real_name": "Anthony Cosmic-Hamster Morlot", "city": null, "context": "vinyl collector"},
-  {"handle": "bushings_not_broken", "platform": "instagram", "real_name": "Lu Fortere", "city": "Portland", "context": "DJ, 3.6k followers, they/them"},
-  {"handle": "topsytishy", "platform": "instagram", "real_name": "Elizabeth Inglese", "city": "Seattle", "context": "digital creator, concert producer, 2.5k followers"},
-  {"handle": "_melwashere", "platform": "instagram", "real_name": "mel", "city": null, "context": "profile page, 1.2k followers"},
-  {"handle": "alonewolf.mp4", "platform": "instagram", "real_name": null, "city": "Omaha", "context": "Omaha show 3/18. DM'd brothel unprompted — 'So stoked to see you again! I first got put on to you when y'all were in Omaha years ago then seen you kill it at Mission Ballroom with Barnacle Boi.' Attended multiple shows. Promises content (photographer). Mentioned brothel in stories 3+ times. HIGH ENGAGEMENT — repeat attendee + content creator + DMs."},
-  {"handle": "amanda_1e", "platform": "instagram", "real_name": "Amanda Le Martinez", "city": "Omaha", "context": "Omaha show 3/18. Realtor/CEO Picture Perfect Home Team, 700+ homes sold. 585 posts, 1,179 followers, 2,099 following. Has concert/live music photo in grid. Threads: @amanda_1e. Entrepreneur, travel enthusiast, foodie, community builder."},
-  {"handle": "artistanomaly_", "platform": "instagram", "real_name": null, "city": "Omaha", "context": "Omaha show 3/18. Bio: 'Artist|Anomaly. Non-binary artist documenting my experiences.' 1,909 posts, 725 followers, 610 following. Private account. Follows brothel back. CROSSOVER: Two Feet evangelist — met at meet & greet, creates content, attended multiple shows, DMs, buys merch. High-value superfan across both artists."},
-  {"handle": "kellerb57", "platform": "instagram", "real_name": "Brennan Keller", "city": "Omaha", "context": "Omaha show 3/18. Teacher, movie theatre manager, producer for @practicalmatterfilms. Movie and live event enthusiast. 25 posts, 215 followers, 1,308 following. Linktree: boxd.it/hRLT. Threads: @kellerb57. Concert photos prominent in grid (AC/DC etc). Highlights: stories."},
-  {"handle": "karrinledwich", "platform": "instagram", "real_name": "Kar", "city": "Omaha", "context": "Omaha show 3/18. They/them. Alt: @coachkarrin. Bio: 'I'm somewhere probably drinking coffee.' Links to immigrantjustice.org. 35 posts, 1,669 followers, 1,209 following. Private. Threads: @karrinledwich. Suggested follows: Feña Ormazabal (darthfernanda), Chris Austin (yarns_casino), Aly Vibes."},
-  {"handle": "drak_47", "platform": "instagram", "real_name": "Alyssa Kalata", "city": "Omaha", "context": "Omaha show 3/18. She/her/hers. 3,920 posts, 433 followers, 1,291 following. Private. Follows brothel back."},
-  {"handle": "good_queef_oiho", "platform": "instagram", "real_name": null, "city": "Ohio", "context": "Omaha show 3/18. Bio: 'MADE IN USA / BORN & BRED / IT'S COLD & LONELY IN OUTERSPACE / LOVE IT|LEAVE IT.' 33 posts, 162 followers, 6,927 following. Private. Follows brothel back. Suggested follows overlap with other Omaha attendees (Madie Howell, Ayden Hunsaker, Andrew Paul)."},
-  {"handle": "madieghowell", "platform": "instagram", "real_name": "Madie Howell", "city": "MN", "context": "Omaha show 3/18. Bio: 'MN 🌻🎶'. 58 posts, 835 followers, 1,138 following. Threads: @madieghowell. Story highlights: Concerts!!!, '26, Coffee, Work, We Belong. Concert content visible in grid. Follows brothel back. Appears in multiple suggested follows lists — social hub in this fan cluster."},
-  {"handle": "aydenson_101", "platform": "instagram", "real_name": "Ayden Hunsaker", "city": "Omaha", "context": "Omaha show 3/18. 28 posts, 592 followers, 131 following. Threads: @aydenson_101. Grid includes concert/purple-lit venue photos. Follows brothel back. Appears in multiple suggested follows — connected to Madie Howell and other Omaha fans."},
-  {"handle": "kerstielarson", "platform": "instagram", "real_name": "Kerstie Larson", "city": "MN", "context": "Omaha show 3/18. She/her. Bio: 'MN 🌊 HSP 🌿 garden girl 🌙 dreamer.' Alt: @aurorathegr8. 613 posts, 511 followers, 1,383 following. Private. Suggested follows overlap (Madie Howell, Ayden Hunsaker, Andrew Paul) — same friend group."},
-  {"handle": "jessambrose11", "platform": "instagram", "real_name": "Jess", "city": "Baltimore", "context": "Omaha show 3/18. She/her. Baltimore Librarian. NY → IN → MD. 25 posts, 134 followers, 734 following. Followed by _pictureplane_. Concert/venue photos in grid (purple lit shows). Follows brothel back."},
-  {"handle": "followed_by_ghosts_", "platform": "instagram", "real_name": null, "city": "Omaha", "context": "Omaha show 3/18. From brothel followers list. Handle displays as '/TE∆L_'. New follow after Omaha show."},
-  {"handle": "maddisoninterrupted", "platform": "instagram", "real_name": "Maddison", "city": "Omaha", "context": "Omaha show 3/18. From brothel followers list. Display: 'Maddison ·◇'. New follow after Omaha show."},
-  {"handle": "melissa.pierpoint", "platform": "instagram", "real_name": "Melissa Pierpoint", "city": "Omaha", "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."},
-  {"handle": "victoriapaigecraig", "platform": "instagram", "real_name": "Victoria Craig", "city": "Omaha", "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."},
-  {"handle": "mama_jo_didamo", "platform": "instagram", "real_name": "Jody Waldrop Didamo", "city": "Omaha", "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."},
-  {"handle": "alishaann26", "platform": "instagram", "real_name": "Alisha", "city": "Omaha", "context": "Omaha show 3/18. Neuro IR Nurse. Cat mom. 'Somewhere on a beach.' 91 posts, 392 followers, 311 following. Concert/stadium photos in grid. Tagged Courtney (lead singer of Spiritbox) — into heavy/alt music scene. Follows brothel back."},
-  {"handle": "iamroxbox", "platform": "instagram", "real_name": "Rox", "city": "Omaha", "context": "Omaha show 3/18. She/her. Bio: 'I take pictures. 📷💜'. 1,196 posts, 223 followers, 959 following. Private. Creates content (photographer). Suggested follows overlap with Omaha cluster (Madie Howell, Ayden Hunsaker, Cannvas Visuals)."},
-  {"handle": "complicatedblondebomb", "platform": "instagram", "real_name": "Odeline", "city": "Omaha", "context": "Omaha show 3/18. Display: *ODELINE. Bio: 'MotHer| SolDier🎖| ArTiSt🎨| BlUeColLaR🔧 |UEC| YoGA loveR🧘'. Husky mom. 898 posts, 2,367 followers, 1,994 following. Art/tattoo/music content prominent. Story highlights: Quotes, Friends, Random. Creates content (artist). Follows brothel back."},
-  {"handle": "chaotic.terrestrial", "platform": "instagram", "real_name": "Heather Leichtenberg", "city": "Omaha", "context": "Omaha show 3/18. 372 posts, 261 followers, 1,241 following. Threads: @chaotic.terrestrial. Private. Suggested follows include karrinledwich and madieghowell — same Omaha social circle. Follows brothel back."},
-  {"handle": "andrewmarkworth_", "platform": "instagram", "real_name": "Andrew", "city": "Omaha", "context": "Omaha show 3/18. Display: 'andrew 🐈‍⬛'. 198 posts, 347 followers, 2,054 following. Threads: @andrewmarkworth_. Grid heavy on music/concert content — Type O Negative, Kepi Ghoulie, show flyers, venue photos. Cat lover. Follows brothel back."},
-  {"handle": "babythuggxae", "platform": "instagram", "real_name": "xae", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. aka kitty. 4 posts, 250 followers, 257 following. Threads: @babythuggxae. Followed by qveenpark, devdcrow + 6 others. Fashion/nightlife content. Brothel follows them."},
-  {"handle": "oddpoison", "platform": "instagram", "real_name": null, "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 29 posts, 14.2k followers, 1,197 following. Threads: @oddpoison. Fire performer, artistic photography. Followed by drewvybaby, chloe__esprit + 104 others. Brothel follows them. AMPLIFIER — 14.2k followers, creates content."},
-  {"handle": "lew__18", "platform": "instagram", "real_name": "Lew", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 88 posts, 912 followers, 1,022 following. Husband to @ellieaverylewis. #Godisgood #Loaded. Threads: @lew__18. Followed by nmvrie, cozycuh + 6 others. Concert/outdoor content. Brothel follows them."},
-  {"handle": "lebasi_m", "platform": "instagram", "real_name": "Michelle Ortiz", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 160 posts, 287 followers, 804 following. Private. Suggested follows: Madie Howell (madieghowell), Ayden Hunsaker (aydenson_101) — connected to Omaha fan cluster."},
-  {"handle": "k.mera444", "platform": "instagram", "real_name": null, "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. Display: ~*OKeiluhO*~. 43 posts, 346 followers, 592 following. Bio: '!violently romantic ■brutally delusional ■torture diary [basement doll'. Private."},
-  {"handle": "tmayhue19", "platform": "instagram", "real_name": "Taylor Mayhue", "city": "Des Moines", "context": "Des Moines show 3/17. 3 posts, 1,008 followers, 2,799 following. Food Science & Mechanical Engineering at Iowa State University. Follows brothel back. DES MOINES AREA confirmed."},
-  {"handle": "emma_avis147", "platform": "instagram", "real_name": "Emma Avis", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 9 posts, 75 followers, 115 following. Bio: 'Just a spirit ✨ living a human experience 🧚'. Private. Suggested follows: Madie Howell, Ayden Hunsaker — same Omaha cluster overlap."},
-  {"handle": "returnof_bz", "platform": "instagram", "real_name": "BZ", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 1 post, 28 followers, 83 following. Bio: '21, Artist, Anime/manga fan, Cosplayer. What's good y'all I'm BZ!' Threads: @returnof_bz. Follows brothel back."},
-  {"handle": "its_me_abby_jo", "platform": "instagram", "real_name": "Abby Morgan", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 144 posts, 336 followers, 113 following. Bio: 'Delulu but make it aesthetic · since 1998 🤍🖤'. Photography/aesthetic content. Follows brothel back."},
-  {"handle": "spookizach", "platform": "instagram", "real_name": "Zach Wiechmann", "city": "Des Moines", "context": "Des Moines show 3/17. He/him. 339 posts, 989 followers, 1,811 following. Bio: 'Haunter | Drafter | Foodie | 📍Des Moines, IA'. Threads: @spookizach. Halloween/haunted house content. DES MOINES confirmed. Follows brothel back. Suggested follow for cheesin_danish (Two Feet crossover)."},
-  {"handle": "lisajunghanss_studio", "platform": "instagram", "real_name": "Lisa Junghanss", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 59 posts, 1,021 followers, 2,746 following. Fine artist — gallery shows, 'Walking In My Shoes', 'Le Nouveau Biedermeier'. Highlights. Follows brothel back."},
-  {"handle": "laybesmooth", "platform": "instagram", "real_name": "Layla", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 3 posts, 233 followers, 320 following. Story highlights with kaomoji. Follows brothel back."},
-  {"handle": "prem.dass.1313", "platform": "instagram", "real_name": "Prem", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 15 posts, 204 followers, 3,282 following. Dark art/music aesthetic — Psychic TV, David Cronenberg, Burroughs, occult imagery (Leviathan Cross, Elan Vital). Follows brothel back."},
-  {"handle": "ludt", "platform": "instagram", "real_name": null, "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 16 posts, 418 followers, 442 following. Alt accounts: @peripher3.14, @kgbbrainchip. Dark streetwear/industrial aesthetic. Follows brothel back."},
-  {"handle": "wrecka_3000", "platform": "instagram", "real_name": "Erica Denise", "city": "Colorado", "context": "Minneapolis/Des Moines show 3/19. 530 posts, 1,664 followers, 1,811 following. Colorado hairstylist, adventurer. Alt: @color.me.erica, hair portfolio at vagaro.com/miyasalon. Threads: @wrecka_3000. Highlights: Colorado, HAIR, Breck 25, Belize, Lake fun. Follows brothel back. Traveled from CO."},
-  {"handle": "eternalsummerlover", "platform": "instagram", "real_name": null, "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. Display: siktiretbosver. 18 posts, 22 followers, 303 following. Bio: 'avid Panchiko listener. Choso fangirl.' Alt: @estn___. TikTok linked. Private. Suggested follows: Madie Howell, Ayden Hunsaker — Omaha cluster."},
-  {"handle": "chillembeats", "platform": "instagram", "real_name": "Jordan Glenney", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. 63 posts, 451 followers, 718 following. DJ/producer — show flyers: House Ghiest, Freak Out, Something Strange. Festival/outdoor event content. AMPLIFIER — scene connector, books/promotes shows. Follows brothel back."},
-  {"handle": "kavery_irl", "platform": "instagram", "real_name": "Kat", "city": "Minneapolis", "context": "Minneapolis/Des Moines show 3/19. She/her. 1,324 posts, 2,201 followers, 4,885 following. Photography: @katharsis.photo. MGMT FOR @dabowmusic. Bio: 'All that is gold does not glitter. Not all those who wander are lost.' Followed by lanejackman, miguelslopez + 17 others. Suggested follows: Electric Hawk (electric_hawk), Molly (themollyaben). Private. HIGH VALUE — music industry management contact, 2.2k followers, photographer. Follows brothel back."},
-  {"handle": "ktroyer214", "platform": "instagram", "real_name": "Kelly Troyer", "city": "Detroit", "context": "Detroit show. 184 posts, 331 followers, 532 following. Bio: 'When you let it all go, you may find what you're lookin for.' Private. Followed by holidayclothing."},
-  {"handle": "ins4n1tyxx", "platform": "instagram", "real_name": null, "city": "Detroit", "context": "Detroit show. 0 posts, 783 followers, 52 following. No content — possible alt/lurker account with significant follower count."},
-  {"handle": "persephonejane078", "platform": "instagram", "real_name": "Persephone Jane", "city": "Detroit", "context": "Detroit show. She/her. 55 posts, 183 followers, 1,218 following. Bio: 'Advocate 🏳️‍🌈🏳️‍⚧️ Empath 🦋 INFJ. We rise by lifting others. Do no harm, take no shit.' Activist content — protest rights, ICE awareness. Public account."},
-  {"handle": "shannie1976", "platform": "instagram", "real_name": "Shannon Kirsop", "city": "Detroit", "context": "Detroit show. 173 posts, 214 followers, 506 following. Bio: 'Just being me.' Has Two Feet concert posts visible in grid. CROSSOVER — Two Feet fan attending Brothel show."},
-  {"handle": "offtherails_77", "platform": "instagram", "real_name": "Brandon Rhodes", "city": "Detroit", "context": "Detroit show. 4 posts, 26 followers, 128 following. All posts are concert footage — live show video/photos from venues. Creates content (live show documentation)."},
-  {"handle": "_.mistaken1._", "platform": "instagram", "real_name": "Daniel Palacios", "city": "Detroit", "context": "Detroit show. 8 posts, 102 followers, 296 following. Private. Suggested follows overlap with other Detroit attendees (Emma Avis, damian/h.abasch, Brandon Rhodes)."},
-  {"handle": "slohannah", "platform": "instagram", "real_name": "Hannah Slodounik", "city": "Detroit", "context": "Detroit show. 508 posts, 299 followers, 2,371 following. Private. Suggested follows overlap with other Detroit attendees (damian/h.abasch, Alex Clark)."},
-  {"handle": "zaydemerx", "platform": "instagram", "real_name": "Isaiah Dancy", "city": "Detroit", "context": "Detroit show. He/him. 203 posts, 829 followers, 1,328 following. Bio: '28 M. No Weapon Formed Against Me Shall Ever Prosper.' Chrono AI linked. Heavy concert content — live show photos, crowd shots, stage lighting. AMPLIFIER — 829 followers, active content creator, concert scene engaged."},
-  {"handle": "starmartyr36", "platform": "instagram", "real_name": "April Peters", "city": "Detroit", "context": "Detroit show. 899 posts, 383 followers, 1,254 following. Bio: William Blake quote — 'To see a World in a Grain of Sand / And a Heaven in a Wild Flower / Hold Infinity in the palm of your hand / And Eternity in an hour.' Links @arts_haven. 9+ recent posts. Private."},
-  {"handle": "starless_wake17", "platform": "instagram", "real_name": "Julia Gannon", "city": "Detroit", "context": "Detroit show. 0 posts, 112 followers, 327 following. No content yet. Suggested follows overlap with other Detroit attendees (damian/h.abasch, Abby Morgan/its_me_abby_jo, Ernest Turner)."},
-  {"handle": "ummartina", "platform": "instagram", "real_name": "Martina", "city": "Detroit", "context": "Detroit show. She/her. 227 posts, 710 followers, 742 following. Bio: '@ninodski 💖 cat&dog mom.' Private."},
-  {"handle": "kylie_biera", "platform": "instagram", "real_name": "Kylie Biera", "city": "Detroit", "context": "Detroit show. 11 posts, 26 followers, 138 following. Bio: 'Model.' Followed by hellogrvnt. Public — modeling photos, bass guitar. Content creator potential."}
+  {
+    "handle": "colinphotos1",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "tagged brothel, concert photo"
+  },
+  {
+    "handle": "_0alara0_",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "tagged brothel, concert dump at Summit Music Hall"
+  },
+  {
+    "handle": "afrika.photo",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Sacramento",
+    "context": "tagged brothel, concert photo 03/06/26"
+  },
+  {
+    "handle": "pineapple.madness_666",
+    "platform": "instagram",
+    "real_name": "Katie Berrie",
+    "city": "Denver",
+    "context": "tagged brothel at Summit Music Hall"
+  },
+  {
+    "handle": "nsn.media",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "tagged brothel, media/content page"
+  },
+  {
+    "handle": "octosnowbunnie",
+    "platform": "instagram",
+    "real_name": "Ren",
+    "city": null,
+    "context": "profile page, fan"
+  },
+  {
+    "handle": "that_nerdy_mf",
+    "platform": "instagram",
+    "real_name": "the gabe",
+    "city": null,
+    "context": "profile page, followed by twofeetmusic"
+  },
+  {
+    "handle": "berighton",
+    "platform": "instagram",
+    "real_name": "Brighton",
+    "city": null,
+    "context": "artist profile, 4.4k followers"
+  },
+  {
+    "handle": "kiki_bacon",
+    "platform": "instagram",
+    "real_name": "Space Babe",
+    "city": "PNW",
+    "context": "profile page, age 29"
+  },
+  {
+    "handle": "strwbrykii",
+    "platform": "instagram",
+    "real_name": "Crystal",
+    "city": null,
+    "context": "profile page, music lover"
+  },
+  {
+    "handle": "_andydye",
+    "platform": "instagram",
+    "real_name": "Andy Dye",
+    "city": null,
+    "context": "profile page, YouTube creator"
+  },
+  {
+    "handle": "tonnmy.k",
+    "platform": "instagram",
+    "real_name": "Thomas",
+    "city": null,
+    "context": "profile page"
+  },
+  {
+    "handle": "ronin_unknown",
+    "platform": "instagram",
+    "real_name": "Ronin Unknown SLC",
+    "city": "Salt Lake City",
+    "context": "profile page, bike videos, 3.9k followers"
+  },
+  {
+    "handle": "lokiloti",
+    "platform": "instagram",
+    "real_name": "loki",
+    "city": "LA",
+    "context": "profile page, 17.1k followers, HEXXX out now"
+  },
+  {
+    "handle": "bella.nuce",
+    "platform": "instagram",
+    "real_name": "Bella Nuce",
+    "city": "Denver / NYC",
+    "context": "music+marketing+movement, 32.9k followers"
+  },
+  {
+    "handle": "kochaj_wave",
+    "platform": "instagram",
+    "real_name": "Ambeatz Adrian",
+    "city": null,
+    "context": "musician/band profile"
+  },
+  {
+    "handle": "aureliehab_",
+    "platform": "instagram",
+    "real_name": "Aurelie Habert",
+    "city": null,
+    "context": "artist, French filmmaker & drone pilot"
+  },
+  {
+    "handle": "grungyhotmess",
+    "platform": "instagram",
+    "real_name": "Rae",
+    "city": "CO",
+    "context": "personal blog, rave/concert content"
+  },
+  {
+    "handle": "basscapital.co",
+    "platform": "instagram",
+    "real_name": "Bass Capital Colorado",
+    "city": "Colorado",
+    "context": "music/event photography page"
+  },
+  {
+    "handle": "szczupakowsky",
+    "platform": "instagram",
+    "real_name": "Filantrop Pianista",
+    "city": null,
+    "context": "circus, 2.8k followers"
+  },
+  {
+    "handle": "ostroslup",
+    "platform": "instagram",
+    "real_name": "natalia",
+    "city": null,
+    "context": "profile page"
+  },
+  {
+    "handle": "tynaaaha",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "NYC",
+    "context": "profile page"
+  },
+  {
+    "handle": "kiyo_nails",
+    "platform": "instagram",
+    "real_name": "KIYO",
+    "city": null,
+    "context": "nail artist, 22.4k followers"
+  },
+  {
+    "handle": "schaapjake",
+    "platform": "instagram",
+    "real_name": "Jake Schaap",
+    "city": "Madison, WI",
+    "context": "trap and wave DJ"
+  },
+  {
+    "handle": "whatisgoingon.420",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "profile page"
+  },
+  {
+    "handle": "c8omusic",
+    "platform": "instagram",
+    "real_name": "c8o",
+    "city": "London, UK",
+    "context": "artist, 22.1k followers"
+  },
+  {
+    "handle": "rilee.not.reid",
+    "platform": "instagram",
+    "real_name": "Rilee Eliese King",
+    "city": "Austin, TX",
+    "context": "photographer, drone, 3.9k followers"
+  },
+  {
+    "handle": "kxnikxgex",
+    "platform": "instagram",
+    "real_name": "KXNIKXGEX",
+    "city": null,
+    "context": "profile page, 6.3k followers"
+  },
+  {
+    "handle": "asned_",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "profile page"
+  },
+  {
+    "handle": "midnightbutterflyxx",
+    "platform": "instagram",
+    "real_name": "Kay Peplinski",
+    "city": null,
+    "context": "profile page, concert content"
+  },
+  {
+    "handle": "trevor.cooper1",
+    "platform": "instagram",
+    "real_name": "Trevor Cooper",
+    "city": "CT",
+    "context": "profile page, photography"
+  },
+  {
+    "handle": "vrbanwitch",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Los Angeles",
+    "context": "LA events, witch house/wave"
+  },
+  {
+    "handle": "joel__rgb",
+    "platform": "instagram",
+    "real_name": "Joel",
+    "city": "San Francisco",
+    "context": "artist and designer, 7.8k followers"
+  },
+  {
+    "handle": "msbelladonna34",
+    "platform": "instagram",
+    "real_name": "AlishaAngelina Belladonna Lopez",
+    "city": null,
+    "context": "photographer"
+  },
+  {
+    "handle": "hannia_nery",
+    "platform": "instagram",
+    "real_name": "Hannia Neri",
+    "city": null,
+    "context": "engineering student, concert content"
+  },
+  {
+    "handle": "all_live_shows",
+    "platform": "instagram",
+    "real_name": "ROLEX",
+    "city": null,
+    "context": "live show videos page"
+  },
+  {
+    "handle": "svndstorm",
+    "platform": "instagram",
+    "real_name": "Sander",
+    "city": null,
+    "context": "profile page, travel/concert content"
+  },
+  {
+    "handle": "fok.of",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "dziary/tattoo, 4.3k followers"
+  },
+  {
+    "handle": "hexashade_",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "she/her, profile page"
+  },
+  {
+    "handle": "mindysinadream",
+    "platform": "instagram",
+    "real_name": "Mindy Song",
+    "city": null,
+    "context": "artist, founder, 16.8k followers"
+  },
+  {
+    "handle": "bimyomusic",
+    "platform": "instagram",
+    "real_name": "Bimyo",
+    "city": null,
+    "context": "producer/DJ, wave/phonk/witchy trap"
+  },
+  {
+    "handle": "officialsbu_",
+    "platform": "instagram",
+    "real_name": "SBU",
+    "city": "Iowa / Los Angeles",
+    "context": "artist, 2.3k followers"
+  },
+  {
+    "handle": "ashesdown",
+    "platform": "instagram",
+    "real_name": "Anthony Cosmic-Hamster Morlot",
+    "city": null,
+    "context": "vinyl collector"
+  },
+  {
+    "handle": "bushings_not_broken",
+    "platform": "instagram",
+    "real_name": "Lu Fortere",
+    "city": "Portland",
+    "context": "DJ, 3.6k followers, they/them"
+  },
+  {
+    "handle": "topsytishy",
+    "platform": "instagram",
+    "real_name": "Elizabeth Inglese",
+    "city": "Seattle",
+    "context": "digital creator, concert producer, 2.5k followers"
+  },
+  {
+    "handle": "_melwashere",
+    "platform": "instagram",
+    "real_name": "mel",
+    "city": null,
+    "context": "profile page, 1.2k followers"
+  },
+  {
+    "handle": "alonewolf.mp4",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Omaha",
+    "context": "Omaha show 3/18. DM'd brothel unprompted — 'So stoked to see you again! I first got put on to you when y'all were in Omaha years ago then seen you kill it at Mission Ballroom with Barnacle Boi.' Attended multiple shows. Promises content (photographer). Mentioned brothel in stories 3+ times. HIGH ENGAGEMENT — repeat attendee + content creator + DMs."
+  },
+  {
+    "handle": "amanda_1e",
+    "platform": "instagram",
+    "real_name": "Amanda Le Martinez",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Realtor/CEO Picture Perfect Home Team, 700+ homes sold. 585 posts, 1,179 followers, 2,099 following. Has concert/live music photo in grid. Threads: @amanda_1e. Entrepreneur, travel enthusiast, foodie, community builder."
+  },
+  {
+    "handle": "artistanomaly_",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Bio: 'Artist|Anomaly. Non-binary artist documenting my experiences.' 1,909 posts, 725 followers, 610 following. Private account. Follows brothel back. CROSSOVER: Two Feet evangelist — met at meet & greet, creates content, attended multiple shows, DMs, buys merch. High-value superfan across both artists."
+  },
+  {
+    "handle": "kellerb57",
+    "platform": "instagram",
+    "real_name": "Brennan Keller",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Teacher, movie theatre manager, producer for @practicalmatterfilms. Movie and live event enthusiast. 25 posts, 215 followers, 1,308 following. Linktree: boxd.it/hRLT. Threads: @kellerb57. Concert photos prominent in grid (AC/DC etc). Highlights: stories."
+  },
+  {
+    "handle": "karrinledwich",
+    "platform": "instagram",
+    "real_name": "Kar",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. They/them. Alt: @coachkarrin. Bio: 'I'm somewhere probably drinking coffee.' Links to immigrantjustice.org. 35 posts, 1,669 followers, 1,209 following. Private. Threads: @karrinledwich. Suggested follows: Feña Ormazabal (darthfernanda), Chris Austin (yarns_casino), Aly Vibes."
+  },
+  {
+    "handle": "drak_47",
+    "platform": "instagram",
+    "real_name": "Alyssa Kalata",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. She/her/hers. 3,920 posts, 433 followers, 1,291 following. Private. Follows brothel back."
+  },
+  {
+    "handle": "good_queef_oiho",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Ohio",
+    "context": "Omaha show 3/18. Bio: 'MADE IN USA / BORN & BRED / IT'S COLD & LONELY IN OUTERSPACE / LOVE IT|LEAVE IT.' 33 posts, 162 followers, 6,927 following. Private. Follows brothel back. Suggested follows overlap with other Omaha attendees (Madie Howell, Ayden Hunsaker, Andrew Paul)."
+  },
+  {
+    "handle": "madieghowell",
+    "platform": "instagram",
+    "real_name": "Madie Howell",
+    "city": "MN",
+    "context": "Omaha show 3/18. Bio: 'MN 🌻🎶'. 58 posts, 835 followers, 1,138 following. Threads: @madieghowell. Story highlights: Concerts!!!, '26, Coffee, Work, We Belong. Concert content visible in grid. Follows brothel back. Appears in multiple suggested follows lists — social hub in this fan cluster."
+  },
+  {
+    "handle": "aydenson_101",
+    "platform": "instagram",
+    "real_name": "Ayden Hunsaker",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. 28 posts, 592 followers, 131 following. Threads: @aydenson_101. Grid includes concert/purple-lit venue photos. Follows brothel back. Appears in multiple suggested follows — connected to Madie Howell and other Omaha fans."
+  },
+  {
+    "handle": "kerstielarson",
+    "platform": "instagram",
+    "real_name": "Kerstie Larson",
+    "city": "MN",
+    "context": "Omaha show 3/18. She/her. Bio: 'MN 🌊 HSP 🌿 garden girl 🌙 dreamer.' Alt: @aurorathegr8. 613 posts, 511 followers, 1,383 following. Private. Suggested follows overlap (Madie Howell, Ayden Hunsaker, Andrew Paul) — same friend group."
+  },
+  {
+    "handle": "jessambrose11",
+    "platform": "instagram",
+    "real_name": "Jess",
+    "city": "Baltimore",
+    "context": "Omaha show 3/18. She/her. Baltimore Librarian. NY → IN → MD. 25 posts, 134 followers, 734 following. Followed by _pictureplane_. Concert/venue photos in grid (purple lit shows). Follows brothel back."
+  },
+  {
+    "handle": "followed_by_ghosts_",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Omaha",
+    "context": "Omaha show 3/18. From brothel followers list. Handle displays as '/TE∆L_'. New follow after Omaha show."
+  },
+  {
+    "handle": "maddisoninterrupted",
+    "platform": "instagram",
+    "real_name": "Maddison",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. From brothel followers list. Display: 'Maddison ·◇'. New follow after Omaha show."
+  },
+  {
+    "handle": "melissa.pierpoint",
+    "platform": "instagram",
+    "real_name": "Melissa Pierpoint",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."
+  },
+  {
+    "handle": "victoriapaigecraig",
+    "platform": "instagram",
+    "real_name": "Victoria Craig",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."
+  },
+  {
+    "handle": "mama_jo_didamo",
+    "platform": "instagram",
+    "real_name": "Jody Waldrop Didamo",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. From brothel followers list. New follow after Omaha show."
+  },
+  {
+    "handle": "alishaann26",
+    "platform": "instagram",
+    "real_name": "Alisha",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Neuro IR Nurse. Cat mom. 'Somewhere on a beach.' 91 posts, 392 followers, 311 following. Concert/stadium photos in grid. Tagged Courtney (lead singer of Spiritbox) — into heavy/alt music scene. Follows brothel back."
+  },
+  {
+    "handle": "iamroxbox",
+    "platform": "instagram",
+    "real_name": "Rox",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. She/her. Bio: 'I take pictures. 📷💜'. 1,196 posts, 223 followers, 959 following. Private. Creates content (photographer). Suggested follows overlap with Omaha cluster (Madie Howell, Ayden Hunsaker, Cannvas Visuals)."
+  },
+  {
+    "handle": "complicatedblondebomb",
+    "platform": "instagram",
+    "real_name": "Odeline",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Display: *ODELINE. Bio: 'MotHer| SolDier🎖| ArTiSt🎨| BlUeColLaR🔧 |UEC| YoGA loveR🧘'. Husky mom. 898 posts, 2,367 followers, 1,994 following. Art/tattoo/music content prominent. Story highlights: Quotes, Friends, Random. Creates content (artist). Follows brothel back."
+  },
+  {
+    "handle": "chaotic.terrestrial",
+    "platform": "instagram",
+    "real_name": "Heather Leichtenberg",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. 372 posts, 261 followers, 1,241 following. Threads: @chaotic.terrestrial. Private. Suggested follows include karrinledwich and madieghowell — same Omaha social circle. Follows brothel back."
+  },
+  {
+    "handle": "andrewmarkworth_",
+    "platform": "instagram",
+    "real_name": "Andrew",
+    "city": "Omaha",
+    "context": "Omaha show 3/18. Display: 'andrew 🐈‍⬛'. 198 posts, 347 followers, 2,054 following. Threads: @andrewmarkworth_. Grid heavy on music/concert content — Type O Negative, Kepi Ghoulie, show flyers, venue photos. Cat lover. Follows brothel back."
+  },
+  {
+    "handle": "babythuggxae",
+    "platform": "instagram",
+    "real_name": "xae",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. aka kitty. 4 posts, 250 followers, 257 following. Threads: @babythuggxae. Followed by qveenpark, devdcrow + 6 others. Fashion/nightlife content. Brothel follows them."
+  },
+  {
+    "handle": "oddpoison",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 29 posts, 14.2k followers, 1,197 following. Threads: @oddpoison. Fire performer, artistic photography. Followed by drewvybaby, chloe__esprit + 104 others. Brothel follows them. AMPLIFIER — 14.2k followers, creates content."
+  },
+  {
+    "handle": "lew__18",
+    "platform": "instagram",
+    "real_name": "Lew",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 88 posts, 912 followers, 1,022 following. Husband to @ellieaverylewis. #Godisgood #Loaded. Threads: @lew__18. Followed by nmvrie, cozycuh + 6 others. Concert/outdoor content. Brothel follows them."
+  },
+  {
+    "handle": "lebasi_m",
+    "platform": "instagram",
+    "real_name": "Michelle Ortiz",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 160 posts, 287 followers, 804 following. Private. Suggested follows: Madie Howell (madieghowell), Ayden Hunsaker (aydenson_101) — connected to Omaha fan cluster."
+  },
+  {
+    "handle": "k.mera444",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. Display: ~*OKeiluhO*~. 43 posts, 346 followers, 592 following. Bio: '!violently romantic ■brutally delusional ■torture diary [basement doll'. Private."
+  },
+  {
+    "handle": "tmayhue19",
+    "platform": "instagram",
+    "real_name": "Taylor Mayhue",
+    "city": "Des Moines",
+    "context": "Des Moines show 3/17. 3 posts, 1,008 followers, 2,799 following. Food Science & Mechanical Engineering at Iowa State University. Follows brothel back. DES MOINES AREA confirmed."
+  },
+  {
+    "handle": "emma_avis147",
+    "platform": "instagram",
+    "real_name": "Emma Avis",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 9 posts, 75 followers, 115 following. Bio: 'Just a spirit ✨ living a human experience 🧚'. Private. Suggested follows: Madie Howell, Ayden Hunsaker — same Omaha cluster overlap."
+  },
+  {
+    "handle": "returnof_bz",
+    "platform": "instagram",
+    "real_name": "BZ",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 1 post, 28 followers, 83 following. Bio: '21, Artist, Anime/manga fan, Cosplayer. What's good y'all I'm BZ!' Threads: @returnof_bz. Follows brothel back."
+  },
+  {
+    "handle": "its_me_abby_jo",
+    "platform": "instagram",
+    "real_name": "Abby Morgan",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 144 posts, 336 followers, 113 following. Bio: 'Delulu but make it aesthetic · since 1998 🤍🖤'. Photography/aesthetic content. Follows brothel back."
+  },
+  {
+    "handle": "spookizach",
+    "platform": "instagram",
+    "real_name": "Zach Wiechmann",
+    "city": "Des Moines",
+    "context": "Des Moines show 3/17. He/him. 339 posts, 989 followers, 1,811 following. Bio: 'Haunter | Drafter | Foodie | 📍Des Moines, IA'. Threads: @spookizach. Halloween/haunted house content. DES MOINES confirmed. Follows brothel back. Suggested follow for cheesin_danish (Two Feet crossover)."
+  },
+  {
+    "handle": "lisajunghanss_studio",
+    "platform": "instagram",
+    "real_name": "Lisa Junghanss",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 59 posts, 1,021 followers, 2,746 following. Fine artist — gallery shows, 'Walking In My Shoes', 'Le Nouveau Biedermeier'. Highlights. Follows brothel back."
+  },
+  {
+    "handle": "laybesmooth",
+    "platform": "instagram",
+    "real_name": "Layla",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 3 posts, 233 followers, 320 following. Story highlights with kaomoji. Follows brothel back."
+  },
+  {
+    "handle": "prem.dass.1313",
+    "platform": "instagram",
+    "real_name": "Prem",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 15 posts, 204 followers, 3,282 following. Dark art/music aesthetic — Psychic TV, David Cronenberg, Burroughs, occult imagery (Leviathan Cross, Elan Vital). Follows brothel back."
+  },
+  {
+    "handle": "ludt",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 16 posts, 418 followers, 442 following. Alt accounts: @peripher3.14, @kgbbrainchip. Dark streetwear/industrial aesthetic. Follows brothel back."
+  },
+  {
+    "handle": "wrecka_3000",
+    "platform": "instagram",
+    "real_name": "Erica Denise",
+    "city": "Colorado",
+    "context": "Minneapolis/Des Moines show 3/19. 530 posts, 1,664 followers, 1,811 following. Colorado hairstylist, adventurer. Alt: @color.me.erica, hair portfolio at vagaro.com/miyasalon. Threads: @wrecka_3000. Highlights: Colorado, HAIR, Breck 25, Belize, Lake fun. Follows brothel back. Traveled from CO."
+  },
+  {
+    "handle": "eternalsummerlover",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. Display: siktiretbosver. 18 posts, 22 followers, 303 following. Bio: 'avid Panchiko listener. Choso fangirl.' Alt: @estn___. TikTok linked. Private. Suggested follows: Madie Howell, Ayden Hunsaker — Omaha cluster."
+  },
+  {
+    "handle": "chillembeats",
+    "platform": "instagram",
+    "real_name": "Jordan Glenney",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. 63 posts, 451 followers, 718 following. DJ/producer — show flyers: House Ghiest, Freak Out, Something Strange. Festival/outdoor event content. AMPLIFIER — scene connector, books/promotes shows. Follows brothel back."
+  },
+  {
+    "handle": "kavery_irl",
+    "platform": "instagram",
+    "real_name": "Kat",
+    "city": "Minneapolis",
+    "context": "Minneapolis/Des Moines show 3/19. She/her. 1,324 posts, 2,201 followers, 4,885 following. Photography: @katharsis.photo. MGMT FOR @dabowmusic. Bio: 'All that is gold does not glitter. Not all those who wander are lost.' Followed by lanejackman, miguelslopez + 17 others. Suggested follows: Electric Hawk (electric_hawk), Molly (themollyaben). Private. HIGH VALUE — music industry management contact, 2.2k followers, photographer. Follows brothel back."
+  },
+  {
+    "handle": "ktroyer214",
+    "platform": "instagram",
+    "real_name": "Kelly Troyer",
+    "city": "Detroit",
+    "context": "Detroit show. 184 posts, 331 followers, 532 following. Bio: 'When you let it all go, you may find what you're lookin for.' Private. Followed by holidayclothing."
+  },
+  {
+    "handle": "ins4n1tyxx",
+    "platform": "instagram",
+    "real_name": null,
+    "city": "Detroit",
+    "context": "Detroit show. 0 posts, 783 followers, 52 following. No content — possible alt/lurker account with significant follower count."
+  },
+  {
+    "handle": "persephonejane078",
+    "platform": "instagram",
+    "real_name": "Persephone Jane",
+    "city": "Detroit",
+    "context": "Detroit show. She/her. 55 posts, 183 followers, 1,218 following. Bio: 'Advocate 🏳️‍🌈🏳️‍⚧️ Empath 🦋 INFJ. We rise by lifting others. Do no harm, take no shit.' Activist content — protest rights, ICE awareness. Public account."
+  },
+  {
+    "handle": "shannie1976",
+    "platform": "instagram",
+    "real_name": "Shannon Kirsop",
+    "city": "Detroit",
+    "context": "Detroit show. 173 posts, 214 followers, 506 following. Bio: 'Just being me.' Has Two Feet concert posts visible in grid. CROSSOVER — Two Feet fan attending Brothel show."
+  },
+  {
+    "handle": "offtherails_77",
+    "platform": "instagram",
+    "real_name": "Brandon Rhodes",
+    "city": "Detroit",
+    "context": "Detroit show. 4 posts, 26 followers, 128 following. All posts are concert footage — live show video/photos from venues. Creates content (live show documentation)."
+  },
+  {
+    "handle": "_.mistaken1._",
+    "platform": "instagram",
+    "real_name": "Daniel Palacios",
+    "city": "Detroit",
+    "context": "Detroit show. 8 posts, 102 followers, 296 following. Private. Suggested follows overlap with other Detroit attendees (Emma Avis, damian/h.abasch, Brandon Rhodes)."
+  },
+  {
+    "handle": "slohannah",
+    "platform": "instagram",
+    "real_name": "Hannah Slodounik",
+    "city": "Detroit",
+    "context": "Detroit show. 508 posts, 299 followers, 2,371 following. Private. Suggested follows overlap with other Detroit attendees (damian/h.abasch, Alex Clark)."
+  },
+  {
+    "handle": "zaydemerx",
+    "platform": "instagram",
+    "real_name": "Isaiah Dancy",
+    "city": "Detroit",
+    "context": "Detroit show. He/him. 203 posts, 829 followers, 1,328 following. Bio: '28 M. No Weapon Formed Against Me Shall Ever Prosper.' Chrono AI linked. Heavy concert content — live show photos, crowd shots, stage lighting. AMPLIFIER — 829 followers, active content creator, concert scene engaged."
+  },
+  {
+    "handle": "starmartyr36",
+    "platform": "instagram",
+    "real_name": "April Peters",
+    "city": "Detroit",
+    "context": "Detroit show. 899 posts, 383 followers, 1,254 following. Bio: William Blake quote — 'To see a World in a Grain of Sand / And a Heaven in a Wild Flower / Hold Infinity in the palm of your hand / And Eternity in an hour.' Links @arts_haven. 9+ recent posts. Private."
+  },
+  {
+    "handle": "starless_wake17",
+    "platform": "instagram",
+    "real_name": "Julia Gannon",
+    "city": "Detroit",
+    "context": "Detroit show. 0 posts, 112 followers, 327 following. No content yet. Suggested follows overlap with other Detroit attendees (damian/h.abasch, Abby Morgan/its_me_abby_jo, Ernest Turner)."
+  },
+  {
+    "handle": "ummartina",
+    "platform": "instagram",
+    "real_name": "Martina",
+    "city": "Detroit",
+    "context": "Detroit show. She/her. 227 posts, 710 followers, 742 following. Bio: '@ninodski 💖 cat&dog mom.' Private."
+  },
+  {
+    "handle": "kylie_biera",
+    "platform": "instagram",
+    "real_name": "Kylie Biera",
+    "city": "Detroit",
+    "context": "Detroit show. 11 posts, 26 followers, 138 following. Bio: 'Model.' Followed by hellogrvnt. Public — modeling photos, bass guitar. Content creator potential."
+  },
+  {
+    "handle": "jason.snapped",
+    "platform": "instagram",
+    "real_name": "Jason Goetten",
+    "city": "Tucson",
+    "context": "concert photographer (88 posts, 120 followers); bio: 'Camera Nerd. Tucson based. Documenting the performances I come across.' — likely shoots Brothel shows; may 09 screenshot batch"
+  },
+  {
+    "handle": "louismontielt",
+    "platform": "instagram",
+    "real_name": "Louis Montiel",
+    "city": "Paris, France",
+    "context": "Visual artist, philosopher, PhD researcher, musician (3273 posts, 4836 followers — high reach, France); may 09 batch"
+  },
+  {
+    "handle": "miajordan_000",
+    "platform": "instagram",
+    "real_name": "Mia",
+    "city": null,
+    "context": "she/her, drawings/skull art (4 posts, 1002 followers); may 09 batch"
+  },
+  {
+    "handle": "mario.apodaca_",
+    "platform": "instagram",
+    "real_name": "Mar Mar",
+    "city": null,
+    "context": "private profile (11 posts, 193 followers); 'Getting through life one day at a time'; may 09 batch"
+  },
+  {
+    "handle": "glitch_craftx",
+    "platform": "instagram",
+    "real_name": "Emilio",
+    "city": "Tucson",
+    "context": "DM'd Brothel after meeting in person ('Legit cool as hell meeting you bro. Hope Tucson wasn't too weird'); 566 followers, follows brothel; may 09 batch"
+  },
+  {
+    "handle": "bweiman1",
+    "platform": "instagram",
+    "real_name": "Bryce Weiman",
+    "city": null,
+    "context": "CROSSOVER FAN — both follow twofeetmusic; mentioned brothel in story (concert photo); 343 followers; may 09 batch"
+  },
+  {
+    "handle": "lizmooncraft",
+    "platform": "instagram",
+    "real_name": "Liz",
+    "city": null,
+    "context": "she/her, Digital creator, Freelancer, Singer/Lyricist, Twitch Global Emote, Army Vet (280 posts, 565 followers); www.tiktok.com/@lizmooncraft; may 09 batch"
+  },
+  {
+    "handle": "reverendfender",
+    "platform": "instagram",
+    "real_name": "Scott Fender",
+    "city": null,
+    "context": "he/they/him/them (129 posts, 471 followers); may 09 batch"
+  },
+  {
+    "handle": "thereverbritual",
+    "platform": "instagram",
+    "real_name": "Roderick Winslow the 3rd",
+    "city": null,
+    "context": "Curator, Producer, Coordinator, Bookings, Event Planning, Promo (29 posts, 152 followers); industry contact — books/promotes shows; GoblinRosin; may 09 batch"
+  },
+  {
+    "handle": "laurenplaskett",
+    "platform": "instagram",
+    "real_name": "Lauren Plaskett",
+    "city": "Texas",
+    "context": "she/her/hers, 'tx · unreliable narrator' (14 posts, 932 followers); may 09 batch"
+  },
+  {
+    "handle": "snow_leoparrrd_",
+    "platform": "instagram",
+    "real_name": "Joel",
+    "city": "Denver",
+    "context": "Musician (23 posts, 469 followers); highlights include 'Dad life' and 'Denver 26' — Denver fan; may 09 batch"
+  },
+  {
+    "handle": "the_california_goddess",
+    "platform": "instagram",
+    "real_name": "Elisa Monique",
+    "city": "California",
+    "context": "Influencer, Model, Owner @estheticsbyelisa_, Radio personality on @avsbodegaradio @thehustle101.3 (74 posts, 1206 followers); may 09 batch"
+  },
+  {
+    "handle": "chimmy.lee1913",
+    "platform": "instagram",
+    "real_name": "April",
+    "city": null,
+    "context": "CROSSOVER FAN — highlight 'TWO FEET!!!' on profile; Class of 2024, BTS fan ('We were born to be real, not perfect' - Yoongi); 48 posts, 106 followers; may 09 batch"
+  },
+  {
+    "handle": "xxvespersxx",
+    "platform": "instagram",
+    "real_name": "XvespersX",
+    "city": null,
+    "context": "0 posts, 16 followers — minimal signal; in Denver suggested-follow cluster (Jordan Miller, jordanfromdenver, AJ Swazo); followed by alyssxalias, sh1nxo; may 09 batch"
+  },
+  {
+    "handle": "ericdavis7540",
+    "platform": "instagram",
+    "real_name": "Eric Davis",
+    "city": "Colorado",
+    "context": "Colorado-based (233 posts, 640 followers); followed by cruxmyheart, lygophiliaa_ and 10 others; may 09 batch"
+  },
+  {
+    "handle": "_oliveurmom",
+    "platform": "instagram",
+    "real_name": "Olivia",
+    "city": null,
+    "context": "private profile (203 posts, 627 followers); suggested-follow cluster includes Sherri Vinson, Kierstin (krs.pnw); may 09 batch"
+  },
+  {
+    "handle": "garbagepailmom",
+    "platform": "instagram",
+    "real_name": "Madi A. Preston",
+    "city": null,
+    "context": "'Girl Mom' (6 posts, 478 followers); may 09 batch"
+  },
+  {
+    "handle": "rudygraica",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "13 posts, 227 followers — concert photos in feed; may 09 batch"
+  },
+  {
+    "handle": "bluesammiegsknottycrochet",
+    "platform": "instagram",
+    "real_name": "Sammie",
+    "city": null,
+    "context": "Artist/crochet — 'Sammie's Crochet' (99 posts, 197 followers); personal IG @bluesammieg; may 09 batch"
+  },
+  {
+    "handle": "nomotionpotion",
+    "platform": "instagram",
+    "real_name": "Ant",
+    "city": null,
+    "context": "Developer @personaloutcome, Photography @morrisetti (3 posts, 84 followers, private); followed by opgrime, culttastic; may 09 batch"
+  },
+  {
+    "handle": "drew.brown27",
+    "platform": "instagram",
+    "real_name": "Drew Brown",
+    "city": null,
+    "context": "private profile, 'Hp tcu Matthew 5:6' (10 posts, 631 followers); may 09 batch"
+  },
+  {
+    "handle": "_wavy_babyy_",
+    "platform": "instagram",
+    "real_name": "April Lynn",
+    "city": null,
+    "context": "6 posts, 1255 followers; may 09 batch"
+  },
+  {
+    "handle": "sadkeys",
+    "platform": "instagram",
+    "real_name": "Elijah Thornton",
+    "city": "Oklahoma City",
+    "context": "he/him, acm intern @ivy_okc, takes calls @floyds99barbershop, shop @aldiusa (16 posts, 2103 followers — high reach); music producer (sadkey.bandcamp.com); followed by lucalush, hexcougarmusic; may 09 batch"
+  },
+  {
+    "handle": "juts_ghost",
+    "platform": "instagram",
+    "real_name": "Ghost",
+    "city": null,
+    "context": "she/her, 'Athlete, Faith first' (0 posts, 61 followers); may 09 batch"
+  },
+  {
+    "handle": "jaredantreyes",
+    "platform": "instagram",
+    "real_name": "Jared Reyes",
+    "city": "Oaxaca / Kansas City",
+    "context": "'Diario de experiencias artísticas. Oaxaca-Kansas City' (68 posts, 626 followers); story highlights: San Francisco, Kansas City, Latin Mafia; may 09 batch"
+  },
+  {
+    "handle": "colonbowel",
+    "platform": "instagram",
+    "real_name": "Brandon Ucantstopmyshine Anamier",
+    "city": null,
+    "context": "'Court of Mountain Dew Level 2' (466 posts, 618 followers); followed by holidayclothing; may 09 batch"
+  },
+  {
+    "handle": "eternalres_t",
+    "platform": "instagram",
+    "real_name": "Алина (Alina)",
+    "city": null,
+    "context": "Russian-speaking (1 post, 34 followers); followed by whereisian777 and tears.in.the.club; may 09 batch"
+  },
+  {
+    "handle": "weball_always",
+    "platform": "instagram",
+    "real_name": "Chris Babcock",
+    "city": null,
+    "context": "concert photos throughout feed including 'GHOST' tagged content (113 posts, 23 followers); attends shows; may 09 batch"
+  },
+  {
+    "handle": "klmrn_audio",
+    "platform": "instagram",
+    "real_name": "klmrn",
+    "city": null,
+    "context": "Phonk / chill music producer; NIGHTDRIVE V on YouTube; 35 posts, 312 followers; may 09 batch"
+  },
+  {
+    "handle": "alex_n_flory",
+    "platform": "instagram",
+    "real_name": "Alex",
+    "city": null,
+    "context": "private profile (1856 posts, 117 followers); suggested-follow cluster: Katie Johnson, N J D, Jared Epicpower; may 09 batch"
+  },
+  {
+    "handle": "sydneysofia",
+    "platform": "instagram",
+    "real_name": null,
+    "city": null,
+    "context": "private profile (52 posts, 582 followers); suggested cluster: Jared Epicpower, Chris Davis (197ohchris_), AJ Swazo cluster; may 09 batch"
+  },
+  {
+    "handle": "octosnowbunnie",
+    "platform": "instagram",
+    "real_name": "Ren",
+    "city": null,
+    "context": "RE-TAG (already in DB) — 'Sweet as honey but my fire has taken whole cities as I burn... Hippy soul with a gym rat's work ethic'; brothel concert photos in feed (88 posts, 587 followers); may 09 batch"
+  }
 ]
